@@ -1,0 +1,4 @@
+*.po~
+*.pyc
+*egg-info
+.DS_Store

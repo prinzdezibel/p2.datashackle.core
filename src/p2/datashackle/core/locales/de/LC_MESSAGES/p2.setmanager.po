@@ -1,0 +1,138 @@
+# #############################################################################
+#
+# Copyright (c) 2003-2004 Zope Foundation and Contributors.
+# All Rights Reserved.
+#
+# This software is subject to the provisions of the Zope Public License,
+# Version 2.1 (ZPL).  A copy of the ZPL should accompany this distribution.
+# THIS SOFTWARE IS PROVIDED "AS IS" AND ANY AND ALL EXPRESS OR IMPLIED
+# WARRANTIES ARE DISCLAIMED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF TITLE, MERCHANTABILITY, AGAINST INFRINGEMENT, AND FITNESS
+# FOR A PARTICULAR PURPOSE.
+#
+# #############################################################################
+msgid ""
+msgstr ""
+"Project-Id-Version: p2.setmanager\n"
+"POT-Creation-Date: Wed Feb 23 11:48:53 2011\n"
+"PO-Revision-Date: 2011-02-23 11:49+0100\n"
+"Last-Translator: Michael Jenny <michael.jenny@datashackle.com>\n"
+"Language-Team: \n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: zope/app/locales/extract.py\n"
+"X-Poedit-Language: German\n"
+"X-Poedit-Country: GERMANY\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+#: p2/setmanager/app/applicationinit.py:38
+#: p2/setmanager/interfaces.py:19
+msgid "Configuration"
+msgstr "Konfiguration"
+
+#: p2/setmanager/app/applicationinit.py:42
+msgid "Users"
+msgstr "Benutzer"
+
+#: p2/setmanager/app/applicationinit.py:46
+msgid "Toolbox"
+msgstr "Werkzeuge"
+
+#: p2/setmanager/domain/folder.py:26
+msgid "Folder"
+msgstr "Ordner"
+
+#: p2/setmanager/interfaces.py:26
+msgid "Name der Objektverwaltung"
+msgstr "Name der Objektverwaltung"
+
+#: p2/setmanager/interfaces.py:30
+msgid "Name der Tabelle"
+msgstr "Name der Tabelle"
+
+#: p2/setmanager/interfaces.py:31
+msgid "Eindeutiger Name der Tabelle, in die die Daten dieser Objektverwaltung abgespeichert werden."
+msgstr "Eindeutiger Name der Tabelle, in die die Daten dieser Objektverwaltung abgespeichert werden."
+
+#: p2/setmanager/interfaces.py:36
+msgid "Primary-Key"
+msgstr "Primärschlüssel"
+
+#: p2/setmanager/interfaces.py:37
+msgid "Name des Tabellenfelds, das als Key für Lookups und Relationen genutzt werden soll."
+msgstr "Name des Tabellenfelds, das als Key für Lookups und Relationen genutzt werden soll."
+
+#: p2/setmanager/interfaces.py:59
+msgid "German"
+msgstr "Deutsch"
+
+#: p2/setmanager/interfaces.py:60
+msgid "English"
+msgstr "Englisch"
+
+#: p2/setmanager/interfaces.py:67
+#, fuzzy
+msgid "User"
+msgstr "Benutzer"
+
+#: p2/setmanager/interfaces.py:71
+msgid "Date format"
+msgstr "Datumsformat"
+
+#: p2/setmanager/interfaces.py:77
+msgid "Language"
+msgstr "Sprache"
+
+#: p2/setmanager/presentation/form/templates/tablerowform.pt:31
+msgid "Revert"
+msgstr "Zurücksetzen"
+
+#: p2/setmanager/presentation/form/templates/tablerowform.pt:35
+msgid "Delete"
+msgstr "Löschen"
+
+#: p2/setmanager/presentation/plan/datamanagement.py:38
+msgid "Edit data"
+msgstr "Daten editieren"
+
+#: p2/setmanager/presentation/plan/designer.py:43
+msgid "Designer"
+msgstr "Designer"
+
+#: p2/setmanager/presentation/plan/templates/datamanagementview.pt:22
+msgid "Save changes"
+msgstr "Speichern"
+
+#: p2/setmanager/presentation/plan/templates/datamanagementview.pt:46
+msgid "Add.."
+msgstr "Hinzufügen.."
+
+#: p2/setmanager/presentation/plan/templates/searchrequestbackend.pt:18
+#: p2/setmanager/presentation/plan/templates/searchrequestbackend.pt:24
+msgid "Next page"
+msgstr "Nächste Seite"
+
+#: p2/setmanager/presentation/plan/templates/searchrequestbackend.pt:7
+#: p2/setmanager/presentation/plan/templates/searchrequestbackend.pt:12
+msgid "Previous page"
+msgstr "Vorherige Seite"
+
+#: p2/setmanager/presentation/principalinfo.py:22
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#: p2/setmanager/presentation/principalinfo.py:24
+msgid "Edit preferences"
+msgstr "Einstellungen ändern"
+
+#: p2/setmanager/presentation/principalinfo.py:35
+msgid "Preferences updated"
+msgstr "Einstellungen gespeichert"
+
+#~ msgid "Table properties"
+#~ msgstr "Tabelleneigenschaften"
+
+#~ msgid "Content"
+#~ msgstr "Unterelemente"
