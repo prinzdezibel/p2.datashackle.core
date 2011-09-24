@@ -50,8 +50,6 @@ class SimpleSQLSearch(grok.GlobalUtility):
         replacement at some point. """
 
         dbutility = getUtility(IDbUtility)
-        if not dbutility.isDatabaseAvailable():
-            return []
         
         # change searchterm into LIKE compatible syntax
         searchterm = self.replaceoperators(searchterm)

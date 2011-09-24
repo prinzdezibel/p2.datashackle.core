@@ -5,16 +5,14 @@
 from sqlalchemy import orm
 from sqlalchemy import Boolean
 
-from p2.datashackle.core.app.directive import tablename, maporder
+from p2.datashackle.core import model_config
 from p2.datashackle.core.models.mapping import map_field_attr
 from p2.datashackle.core.models.setobject_types import setobject_table_registry, \
     setobject_type_registry
 from p2.datashackle.core.models.span.span import SpanType
 
-
+@model_config(tablename='p2_span_checkbox', maporder=3)
 class Checkbox(SpanType):
-    maporder(3)
-    tablename('p2_span_checkbox')
 
     @classmethod
     def map_computed_properties(cls):

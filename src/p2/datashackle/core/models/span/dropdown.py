@@ -5,7 +5,7 @@
 from sqlalchemy import orm
 from zope.component import getUtility
 
-from p2.datashackle.core.app.directive import tablename, maporder
+from p2.datashackle.core import model_config
 from p2.datashackle.core.app.exceptions import SetobjectGraphException
 from p2.datashackle.core.app.setobjectreg import setobject_table_registry, setobject_type_registry
 from p2.datashackle.core.interfaces import IDbUtility
@@ -14,10 +14,9 @@ from p2.datashackle.core.models.linkage import Linkage
 from zope.component import getUtility
 
 
+@model_config(tablename='p2_span_dropdown', maporder=2)
 class Dropdown(SpanType):
-    maporder(2)
-    tablename('p2_span_dropdown')
-    
+   
     width = 95
  
     def __init__(self, span_name=None, objid=None):
@@ -62,6 +61,7 @@ class Dropdown(SpanType):
         info = {}
         if self.operational:
             info['linkage_id'] = self.linkage.id
+            info['attr_name'] = self.attr_name
         return info
 
     @classmethod

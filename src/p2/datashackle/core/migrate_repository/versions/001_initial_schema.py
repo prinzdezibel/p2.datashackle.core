@@ -59,7 +59,7 @@ p2_linkage = Table('p2_linkage',
              metadata,
              Column('id', String(8), primary_key=True, autoincrement=False),
              Column('attr_name', String(63), nullable=True),
-             Column('ref_type', String(63), nullable=False),
+             Column('ref_type', String(63), nullable=False, default='dict'),
              Column('ref_key', String(63), nullable=True),
              Column('foreignkeycol', String(63), nullable=True),
              Column('foreignkeycol2', String(63), nullable=True), # Required for n:m relations
@@ -100,7 +100,7 @@ p2_span_alphanumeric = Table('p2_span_alphanumeric',
                  Column('span_identifier', String(8), ForeignKey('p2_span.span_identifier', onupdate="CASCADE"), primary_key=True), # Joined table inheritance!
                  Column('attr_name', String(63), nullable=True),
                  Column('field_identifier', String(63), nullable=True),
-                 Column('multi_line', Boolean, nullable=True),
+                 #Column('multi_line', Boolean, nullable=True),
                  Column('fk_field_type', ForeignKey('p2_fieldtype.id'), nullable=True),
                  Column('required', Boolean, nullable=True, default=True),
                  mysql_engine='InnoDB'
@@ -179,6 +179,15 @@ p2_fieldtype = Table('p2_fieldtype',
    mysql_engine='InnoDB',
 )
 
+p2_country = Table('p2_country',
+   metadata,
+   Column('id', String(length=8), primary_key=True, nullable=False, autoincrement=False),
+   Column('country_name', String(64), nullable=False),
+   Column('country_iso_code_2', CHAR(length=2), nullable=False),
+   Column('country_iso_code_3', CHAR(length=3), nullable=False),
+   mysql_engine='InnoDB',
+)
+
 p2_test = Table('test',
                 metadata,
                 Column('id', String(8), primary_key=True, autoincrement=False),
@@ -194,6 +203,15 @@ def upgrade(migrate_engine):
 
     ForeignKeyConstraint(columns=[p2_plan.c.fk_default_form]  , refcolumns=[p2_form.c.form_identifier]).create()
     
+    # data dict for user data during upgrade/downgrade process 
+    migrate_engine.data = {}
+   
+    def generate_random_identifier():
+        n_id = random.randint(0, 100000000)
+        id = "%08d" % n_id
+        return id
+    
+    migrate_engine.generate_random_identifier = generate_random_identifier 
 
     
 def downgrade(migrate_engine):
@@ -216,3 +234,4 @@ def downgrade(migrate_engine):
     p2_fieldtype.drop(migrate_engine)
     p2_test.drop(migrate_engine)
     p2_cardinality.drop()
+    p2_country.drop()

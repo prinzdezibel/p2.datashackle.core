@@ -11,7 +11,7 @@ from sqlalchemy import orm
 from zope.component import getUtility, queryUtility
 from zope.location.interfaces import ILocation
 
-from p2.datashackle.core.app.directive import tablename
+from p2.datashackle.core import model_config
 from p2.datashackle.core.app.exceptions import *
 from p2.datashackle.core.app.setobjectreg import setobject_type_registry
 from p2.datashackle.core.models.form import FormType
@@ -27,12 +27,11 @@ def fetch_plan(genericset):
     plan.make_locatable(genericset.__name__, genericset.__parent__)
     return plan
 
-
+@model_config(tablename='p2_plan')
 class Plan(SetobjectType):
     # In order to find default views via /index rather than
     # Zope3's /index.html we need to implement interfaces.IContext
     grok.implements(IPlan, IContext, ILocation)
-    tablename('p2_plan')
  
     #def __init__(self, so_module=None, so_type=None, objid=None):
     def __init__(self, objid=None):
@@ -95,7 +94,8 @@ class Plan(SetobjectType):
 
     @property
     def table_identifier(self):
-        so_type = setobject_type_registry.get(self.so_module, self.so_type)
+        """The table on which this plan is operating."""
+        so_type = setobject_type_registry.lookup(self.so_module, self.so_type)
         return so_type.get_table_name()
  
 

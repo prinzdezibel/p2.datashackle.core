@@ -8,7 +8,6 @@ import logging
 from sqlalchemy import orm, Table, String, Column, Boolean, ForeignKey
 
 from p2.datashackle.core.app.exceptions import *
-from p2.datashackle.core.app.directive import tablename
 from p2.datashackle.core.app.setobjectreg import setobject_table_registry, setobject_type_registry#, setobject_name_registry
 from p2.datashackle.core.sql import get_tables, field_exists
 from p2.datashackle.core.globals import metadata
@@ -17,8 +16,7 @@ from p2.datashackle.core.models.table import Table
 from p2.datashackle.core.interfaces import IRelationalDatabaseOpened 
 
 
-@grok.subscribe(IRelationalDatabaseOpened)
-def orm_mapping(event):
+def orm_mapping(event=None):
     # Register table type for grokked SetobjectType classes
     registered = []
     for setobject_type in setobject_type_registry.values():

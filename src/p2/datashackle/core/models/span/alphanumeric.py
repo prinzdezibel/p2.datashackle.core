@@ -13,7 +13,7 @@ from zope.publisher.interfaces import IRequest
 from zope.security.interfaces import NoInteraction
 from zope.security.management import getInteraction
 
-from p2.datashackle.core.app.directive import tablename, maporder
+from p2.datashackle.core import model_config
 from p2.datashackle.core.app.exceptions import SetobjectGraphException
 from p2.datashackle.core.app.setobjectreg import setobject_table_registry, \
     setobject_type_registry
@@ -24,12 +24,10 @@ from p2.datashackle.core.models.span.dataconverter import IDataConverter, DataCo
 from p2.datashackle.core.models.span.span import SpanType
 
 
+@model_config(tablename='p2_span_alphanumeric', maporder=3)
 class Alphanumeric(SpanType):
-    maporder(3)
-    tablename('p2_span_alphanumeric')
-
+ 
     def __init__(self, span_name=None, objid=None):
-        self.multi_line = False
         self.required = True
         ft = setobject_type_registry.lookup('p2.datashackle.core.models.setobject_types', 'p2_fieldtype')
         sess = getUtility(IDbUtility).Session()
@@ -38,7 +36,7 @@ class Alphanumeric(SpanType):
         super(Alphanumeric, self).__init__(span_name, objid)
 
     def _get_info(self):
-        info = {'multi_line': self.multi_line}
+        info = {}
         if self.operational:
             piggyback = self.piggyback
             converter = queryAdapter(self, name=self.field_type.field_type, interface=IDataConverter)
@@ -46,8 +44,8 @@ class Alphanumeric(SpanType):
                 piggyback = converter.to_span_value(piggyback) 
             info['piggyback'] = piggyback
             info['attr_name'] = self.attr_name
+        info['field_type'] = str(self.field_type.field_type).lower()
         info['required'] = self.required
-        info['multi_line'] = self.multi_line
         return info
     
     def make_operational(self, setobject):
@@ -69,13 +67,15 @@ class Alphanumeric(SpanType):
                    polymorphic_identity='alphanumeric')
    
     def onbefore_set_payload_attribute(self, setobject, attribute, value, mode):
+        # Parameter `value` can be a native type (string, boolean) or another setobject
         if mode == 'save':
             converter = queryAdapter(self, name=self.field_type.field_type, interface=IDataConverter)
             if converter != None:
                 value = converter.to_field_value(value)
             if self.required == True and (value == None or len(value) == 0):
                 raise SetobjectGraphException("Missing field '%s' required." % (attribute), setobject.id)
-  
+            return value
+ 
     def post_order_traverse(self, mode):
         if mode == 'save':
             so_type = setobject_type_registry.lookup(

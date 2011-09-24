@@ -7,17 +7,15 @@ import grok
 from sqlalchemy import orm
 from zope.component import getUtility
 
-from p2.datashackle.core.app.directive import maporder, tablename
+from p2.datashackle.core import model_config
 from p2.datashackle.core.app.setobjectreg import setobject_type_registry
 from p2.datashackle.core.interfaces import IWidgetType, IDbUtility
 from p2.datashackle.core.models.widget.widget import WidgetType
 
-
+@model_config(tablename='p2_widget', maporder=2)
 class Relation(WidgetType):
     grok.implements(IWidgetType)
 
-    maporder(2)   
-    
     js_propertyform_constructor = 'p2.RelationPropertyform'
     
     def __init__(self, objid=None):

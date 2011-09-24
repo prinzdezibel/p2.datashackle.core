@@ -4,12 +4,12 @@
 
 import grok
 
+from p2.datashackle.core import model_config
 from p2.datashackle.core.interfaces import *
 from p2.datashackle.core.models.setobject_types import SetobjectType
-from p2.datashackle.core.app.directive import tablename
 
+@model_config(tablename='p2_media')
 class Media(SetobjectType):
-    tablename('p2_media')
    
     def generate_url(self, request, as_thumbnail):
         app = grok.getApplication()

@@ -24,13 +24,13 @@ def upgrade(migrate_engine):
     global cardinalitydict
     metadata.bind = migrate_engine
     
-    cardinalitydict = {
+    migrate_engine.data['cardinalities'] = cardinalitydict = {
         '1:n' : generate_random_identifier(),
         '1(fk):1' : generate_random_identifier(),
         '1:1(fk)' : generate_random_identifier(),
         'n:1' : generate_random_identifier(),
         'n:m' : generate_random_identifier()
-    }
+        }
     
     for cardinalityvalue,cardinalityid in cardinalitydict.items():
         p2_cardinality.insert().execute(

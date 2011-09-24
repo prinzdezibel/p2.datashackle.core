@@ -19,7 +19,6 @@ from sqlalchemy.orm.util import has_identity
 from zope.component import getUtility, Interface
 
 from p2.datashackle.core.globals import metadata
-from p2.datashackle.core.app.directive import tablename, maporder
 from p2.datashackle.core.app.exceptions import *
 from p2.datashackle.core.app.setobjectreg import setobject_table_registry, setobject_type_registry
 from p2.datashackle.core.interfaces import IDbUtility
@@ -54,8 +53,7 @@ def create_setobject_type(table_name, do_mapping=True):
     # base class' (SetobjectType) __init__ function.
     setobject_type = type(table_name, (SetobjectType, ), {'__init__': lambda x, objid=None: super(setobject_type, x).__init__(objid)})
 
-    # Set tablename directive for newly created setobject type class
-    tablename.set(setobject_type, table_name)
+    setobject_type.table_name = table_name 
 
     # Register setobject class type
     setobject_type_registry.register_type(setobject_type, 1)
@@ -77,6 +75,8 @@ class SetobjectType(object):
     # all linkages of an object (inclusive the base class linkages) use setobject.collections['attr_name']['linkage']
     # instead.
     linkages = dict()  
+
+    table_name = None
 
     def __init__(self, objid=None):
         if objid != None and len(objid) == 0:
@@ -158,13 +158,14 @@ class SetobjectType(object):
     def get_primary_key_attr(cls):
         """Returns the python attribute that holds the id (See 'id' property)."""
         return getattr(cls, cls.get_primary_key_attr_name())    
-        
+       
     @classmethod
     def get_table_name(cls):
-        table_name = tablename.bind().get(cls)
-        if not table_name:
-            raise Exception("No table name specified. Please use the tablename directive to specify the table name "
-                            "for class %r" % cls)
+        table_name = cls.table_name
+        if table_name is None:
+            raise Exception("No table name specified. Please use the "
+                "model_config decorator to specify the table name "
+                "for class %r" % cls)
         return table_name
     
     @classmethod

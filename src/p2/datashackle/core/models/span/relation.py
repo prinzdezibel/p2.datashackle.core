@@ -5,7 +5,7 @@
 from sqlalchemy import orm
 from zope.component import getUtility
 
-from p2.datashackle.core.app.directive import tablename, maporder
+from p2.datashackle.core import model_config
 from p2.datashackle.core.app.setobjectreg import setobject_table_registry, setobject_type_registry
 from p2.datashackle.core.interfaces import IDbUtility
 from p2.datashackle.core.models.setobject_types import SetobjectType
@@ -14,9 +14,9 @@ from p2.datashackle.core.models.linkage import Linkage
 from zope.component import getUtility
 from p2.datashackle.core.app.setobjectreg import setobject_table_registry, setobject_type_registry
 
+
+@model_config(tablename='p2_span_relation', maporder=3)
 class Relation(SpanType):
-    maporder(3)
-    tablename('p2_span_relation')
     
     height = 50
     width = 50

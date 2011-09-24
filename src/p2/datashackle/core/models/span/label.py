@@ -4,11 +4,11 @@
 
 from sqlalchemy import orm
 
-from p2.datashackle.core.app.directive import tablename, maporder
+from p2.datashackle.core import model_config
 from p2.datashackle.core.models.span.span import SpanType
 
+@model_config(tablename='p2_span', maporder=3)
 class Label(SpanType):
-    maporder(3)
 
     @classmethod
     def map_computed_properties(cls):

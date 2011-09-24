@@ -11,7 +11,7 @@ from grokcore.content import interfaces
 from zope.component import getUtility, getMultiAdapter
 from zope.location.interfaces import ILocation
 
-from p2.datashackle.core.app.directive import tablename, maporder
+from p2.datashackle.core import model_config
 from p2.datashackle.core.app.setobjectreg import setobject_type_registry
 from p2.datashackle.core.models.setobject_graph import SetobjectGraph
 from p2.datashackle.core.models.setobject_types import SetobjectType
@@ -25,13 +25,12 @@ class LocationHelper(object):
         self.__parent__ = parent
         self.__name__ = 'forms'
 
+@model_config(tablename='p2_form', maporder=2)
 class FormType(SetobjectType):
     # In order to find default views via /index rather than
     # Zope3's /index.html we need to implement interfaces.IContext
     # The form gains location awareness (grok.url() capability) through implementing ILocation
     grok.implements(IFormType, interfaces.IContext, ILocation)
-    tablename('p2_form')
-    maporder(2)
 
     def __init__(self, form_name=None, plan=None, objid=None, width=200, height=200):
         # BEGIN sqlalchemy instrumented attributes

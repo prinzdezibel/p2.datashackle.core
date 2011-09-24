@@ -98,12 +98,14 @@ class SetobjectGraph(object):
             attribute = node.get('name')
             value = node.text
             span_identifier = node.get('span_identifier')
+            # Not all prop have span_identifiers (e.g. css_style), because
+            # these are not visualized as spans
             if span_identifier is not None:
                 session = getUtility(IDbUtility).Session()
                 span_type = setobject_type_registry.lookup('p2.datashackle.core.models.span.span', 'SpanType')
                 span = session.query(span_type).get(span_identifier)
                 assert(span != None)
-                span.onbefore_set_payload_attribute(setobject, attribute, value, self.mode)
+                value = span.onbefore_set_payload_attribute(setobject, attribute, value, self.mode)
             setobject.set_attribute(attribute, value, self.mode)
         elif node.tag == 'obj':
             # Method sets up a processing scope which results
@@ -220,18 +222,17 @@ class SetobjectGraph(object):
                         session = getUtility(IDbUtility).Session()
                         span_type = setobject_type_registry.lookup('p2.datashackle.core.models.span.span', 'SpanType')
                         span = session.query(span_type).get(span_identifier)
-                        span.onbefore_set_payload_attribute(
+                        setobject = span.onbefore_set_payload_attribute(
                             setobject=parent_setobject,
                             attribute=attr_name,
                             value=setobject,
                             mode=self.mode
-                        )
+                            )
                     parent_setobject.set_attribute(
                         attribute=attr_name,
                         value=setobject,    
                         mode=self.mode
                     )
-                    #setattr(parent_setobject, attr_name, setobject)
             else:
                 coll = getattr(parent_setobject, attr_name)
                 # Refkey: If there's a refkey the value of the key is searched within the object's properties.

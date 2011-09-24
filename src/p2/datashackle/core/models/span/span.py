@@ -12,15 +12,16 @@ from zope.component import getMultiAdapter, queryMultiAdapter, getUtility
 from zope.app.appsetup.interfaces import IDatabaseOpenedWithRootEvent
 from zope.catalog.interfaces import ICatalog
 
-from p2.datashackle.core.app.directive import tablename, maporder
+from p2.datashackle.core import model_config
 from p2.datashackle.core.app.exceptions import *
 from p2.datashackle.core.app.setobjectreg import setobject_table_registry
 from p2.datashackle.core.interfaces import *
 from p2.datashackle.core.models.setobject_types import SetobjectType
 
+
+@model_config(tablename='p2_span')
 class SpanType(SetobjectType):
     grok.implements(ISpanType)
-    tablename('p2_span')
     
     label_width = 95
  
@@ -46,8 +47,10 @@ class SpanType(SetobjectType):
         self.op_setobject_id = setobject.id
     
     def onbefore_set_payload_attribute(self, setobject, attribute, value, mode):
-        """This method is called when an attribute of this span's payload (a user setobject) is going to be set.
-        """   
+        """This method is called when an attribute of this span's payload (a user setobject
+        or a native object attribute like a string) is going to be set.
+        """
+        return value
 
     def onbefore_post_order_traverse(self, setobject, mode):
         """Called before a span's setobject is travered in post order.
@@ -118,10 +121,8 @@ class SpanType(SetobjectType):
             with_polymorphic='*', 
        )
     
-    
+@model_config(tablename='p2_span_action', maporder=2) 
 class Action(SpanType):
-    maporder(2)
-    tablename('p2_span_action')
 
     @classmethod
     def map_computed_properties(cls):

@@ -25,7 +25,10 @@ setup(name='p2.datashackle.core',
           'setuptools',
           'SQLAlchemy',
           'sqlalchemy-migrate',
-          'MySQL-python'
+          'MySQL-python',
+          'grok',
+          'venusian',
+          'lxml'
           ],
       entry_points="""
       # -*- Entry points: -*-

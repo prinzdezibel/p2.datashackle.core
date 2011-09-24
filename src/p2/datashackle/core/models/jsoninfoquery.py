@@ -15,8 +15,6 @@ class JsonInfoQuery(grok.GlobalUtility):
     grok.implements(IJsonInfoQuery)
     def get_plan_table_info(self):
         """ Dump a JSON dictionary which associates all plan identifiers with their respective table identifiers """
-        if not getUtility(IDbUtility).isDatabaseAvailable():
-            return json.dumps({})
         dictionary = {}
         session = getUtility(IDbUtility).Session()
         plans = session.query(Plan).all()

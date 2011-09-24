@@ -12,17 +12,18 @@ from sqlalchemy.sql import and_, or_
 from zope.component import getUtility, getMultiAdapter, queryMultiAdapter
 from zope.location.interfaces import ILocation
 
-from p2.datashackle.core.interfaces import *
-from p2.datashackle.core.app.directive import tablename, maporder
+from p2.datashackle.core.interfaces import IWidgetType
+from p2.datashackle.core import model_config
 from p2.datashackle.core.app.exceptions import UnspecificException
 from p2.datashackle.core.app.setobjectreg import setobject_table_registry, setobject_type_registry
 from p2.datashackle.core.models.setobject_types import SetobjectType
 from p2.datashackle.core.models.span.span_factory import create_span
 from p2.datashackle.core.models.identity import generate_random_identifier
 
+
+@model_config(tablename='p2_widget')
 class WidgetType(SetobjectType):
     grok.implements(IWidgetType, interfaces.IContext, ILocation)
-    tablename('p2_widget')
     
     js_widget_constructor = 'p2.Widget'
     js_propertyform_constructor = 'p2.PropertyForm'
@@ -101,10 +102,9 @@ class WidgetType(SetobjectType):
             properties=WidgetType.mapper_properties
             )
            
-
+@model_config(tablename='p2_widget', maporder=2)
 class Action(WidgetType):
     grok.implements(IWidgetType)   
-    maporder(2)
      
     def __init__(self, objid=None):
         super(Action, self).__init__(objid)
@@ -121,9 +121,9 @@ class Action(WidgetType):
             )
 
    
+@model_config(tablename='p2_widget', maporder=2)
 class Checkbox(WidgetType):
     grok.implements(IWidgetType)   
-    maporder(2)
  
     def __init__(self, objid=None):
         super(Checkbox, self).__init__(objid)
@@ -140,10 +140,9 @@ class Checkbox(WidgetType):
               properties=Checkbox.mapper_properties,
               )
 
-
+@model_config(tablename='p2_widget', maporder=2)
 class Labeltext(WidgetType):
     grok.implements(IWidgetType)   
-    maporder(2)
     
     def __init__(self, objid=None):
         super(Labeltext, self).__init__(objid)
@@ -160,11 +159,10 @@ class Labeltext(WidgetType):
                  properties=Labeltext.mapper_properties,
                  )
         
-
         
+@model_config(tablename='p2_widget', maporder=2)
 class Fileupload(WidgetType):
     grok.implements(IWidgetType)   
-    maporder(2)
     
     js_propertyform_constructor = 'p2.FileuploadPropertyform'
     js_widget_constructor = 'p2.Widget.Fileupload'

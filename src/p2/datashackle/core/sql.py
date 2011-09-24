@@ -9,29 +9,29 @@ from p2.datashackle.core.app.exceptions import *
 from p2.datashackle.core.interfaces import IDbUtility
 
 
-def max_allowed_packet_sql(provider):
-    if provider == 'mysql':
-        return "SELECT @@max_allowed_packet"
+def max_allowed_packet_sql():
+    db_utility = getUtility(IDbUtility)
+    if db_utility.settings['provider'] == 'mysql':
+         return "SELECT @@max_allowed_packet"
     else:
         raise UnspecificException("Unknown database provider")
     
 def table_exists(table_name):
     db_utility = getUtility(IDbUtility)
-    if (db_utility.db_provider == 'mysql'):
+    if db_utility.settings['provider'] == 'mysql':
         stmt = "SELECT TABLE_NAME FROM information_schema.TABLES " \
-            "WHERE TABLE_SCHEMA = '" + db_utility.db_name + "' AND " \
+            "WHERE TABLE_SCHEMA = '" + db_utility.settings['db'] + "' AND " \
             "TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = '" + table_name + "'"
     else:
         raise UnspecificException("Unknown database provider.")
     return db_utility.engine.execute(stmt).first() is not None
      
-    
 
 def get_tables():
     db_utility = getUtility(IDbUtility)
-    if (db_utility.db_provider == 'mysql'):
+    if db_utility.settings['provider'] == 'mysql':
         stmt = "SELECT TABLE_NAME FROM information_schema.TABLES " \
-            "WHERE TABLE_SCHEMA = '" + db_utility.db_name + "' AND " \
+            "WHERE TABLE_SCHEMA = '" + db_utility.settings['db'] + "' AND " \
             "TABLE_TYPE = 'BASE TABLE'"
     else:
         raise UnspecificException("Unknown database provider.")
@@ -39,9 +39,9 @@ def get_tables():
 
 def field_exists(table_identifier, field_identifier):
     db_utility = getUtility(IDbUtility)
-    if (db_utility.db_provider == 'mysql'):
+    if db_utility.settings['provider'] == 'mysql':
         stmt = "SELECT COUNT(*) FROM information_schema.COLUMNS " \
-            "WHERE TABLE_SCHEMA = '" + db_utility.db_name + "' AND TABLE_NAME = " \
+            "WHERE TABLE_SCHEMA = '" + db_utility.settings['db'] + "' AND TABLE_NAME = " \
             "'" + str(table_identifier) + "' AND COLUMN_NAME = " \
             "'" + str(field_identifier) + "'"
     else:

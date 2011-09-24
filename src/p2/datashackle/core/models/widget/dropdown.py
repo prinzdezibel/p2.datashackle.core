@@ -6,15 +6,14 @@ import grok
 
 from sqlalchemy import orm
 
-from p2.datashackle.core.app.directive import maporder, tablename
+from p2.datashackle.core import model_config
 from p2.datashackle.core.interfaces import IWidgetType
 from p2.datashackle.core.models.widget.widget import WidgetType
 
 
+@model_config(tablename='p2_widget', maporder=2) 
 class Dropdown(WidgetType):
     grok.implements(IWidgetType)
-
-    maporder(2)   
     
     js_propertyform_constructor = 'p2.DropdownPropertyform'
     

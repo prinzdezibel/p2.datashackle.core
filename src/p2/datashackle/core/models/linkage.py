@@ -6,7 +6,7 @@ from sqlalchemy import orm, Column, Table, String, Integer
 from sqlalchemy.schema import ForeignKey
 from zope.component import getUtility
 
-from p2.datashackle.core.app.directive import tablename, maporder
+from p2.datashackle.core import model_config
 from p2.datashackle.core.app.exceptions import *
 from p2.datashackle.core.app.setobjectreg import setobject_type_registry, setobject_table_registry
 from p2.datashackle.core.sql import field_exists
@@ -16,8 +16,8 @@ from p2.datashackle.core.models.setobject_types import SetobjectType, create_set
 from p2.datashackle.core.models.table import Table
 
 
+@model_config(tablename='p2_linkage')
 class Linkage(SetobjectType):
-    tablename('p2_linkage')
     source_cardinality = None
     target_cardinality = None
     is_multi_selectable = False

@@ -5,17 +5,16 @@
 from sqlalchemy import orm
 from zope.component import getUtility
 
-from p2.datashackle.core.app.directive import tablename, maporder
+from p2.datashackle.core import model_config
 from p2.datashackle.core.interfaces import IDbUtility
 from p2.datashackle.core.models.setobject_types import SetobjectType, setobject_table_registry
 from p2.datashackle.core.models.linkage import Linkage
 from p2.datashackle.core.models.span.span import SpanType
 
 
+@model_config(tablename='p2_span_fileupload', maporder=3)
 class Fileupload(SpanType):
-    maporder(3)
-    tablename('p2_span_fileupload')
-    
+   
     fileupload_label_width = 50
     fileupload_label_height = 50
     
