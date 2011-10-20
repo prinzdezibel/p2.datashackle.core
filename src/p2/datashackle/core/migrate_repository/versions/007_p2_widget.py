@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import cssutils
+import os
+import sys
+from optparse import OptionParser
 from sqlalchemy.sql import select, and_
 
 mod = __import__('001_initial_schema')
@@ -14,6 +18,112 @@ p2_span_checkbox = getattr(mod, 'p2_span_checkbox')
 p2_span_relation = getattr(mod, 'p2_span_relation')
 p2_span_action = getattr(mod, 'p2_span_action')
 p2_span_dropdown = getattr(mod, 'p2_span_dropdown')
+
+parser = OptionParser()
+parser.add_option("-m", "--management-styles",
+    dest="management_styles",
+    default=False,
+    help="Use this option to specify directory of management css styles.")
+options, args = parser.parse_args(sys.argv)
+path_styles = options.management_styles
+
+stylesheets = {}
+
+def write_cssrule(plan_id, selector_text, value):
+    stylesheet_name = str(plan_id) + '.css'
+    if stylesheet_name in stylesheets:
+        stylesheet = stylesheets[stylesheet_name]
+    else:
+        stylesheet_filepath = os.path.join(path_styles, stylesheet_name)
+        stylesheet_exists = os.path.exists(stylesheet_filepath)
+        if stylesheet_exists:
+            stylesheet = cssutils.parseFile(stylesheet_filepath, encoding='utf-8')
+        else:
+            stylesheet = cssutils.css.CSSStyleSheet()
+        stylesheets[stylesheet_name] = stylesheet
+
+    declarations = value.split(';')
+    for declaration in declarations:
+        colon = declaration.find(':')
+        css_property = declaration[:colon]
+        css_value = declaration[colon + 1:]
+        declaration = cssutils.css.CSSStyleDeclaration()
+        declaration[css_property] = css_value
+        css_rule = cssutils.css.CSSStyleRule(
+            selectorText=selector_text,
+            style=declaration
+        )
+        stylesheet.add(css_rule)
+
+def write_widget_cssrule(id, value):
+    plan_id = select([p2_plan.c.plan_identifier], 
+        and_(p2_plan.c.plan_identifier == p2_form.c.fk_p2_plan,
+        p2_form.c.form_identifier == p2_widget.c.fk_p2_form,
+        p2_widget.c.widget_identifier == id)).execute().scalar()
+    selector = 'div[data-widget-identifier="' + id + '"]'
+    write_cssrule(plan_id, selector, value)
+
+def write_span_cssrule(id, value):
+    plan_id = select([p2_plan.c.plan_identifier], 
+        and_(p2_plan.c.plan_identifier == p2_form.c.fk_p2_plan,
+        p2_form.c.form_identifier == p2_widget.c.fk_p2_form,
+        p2_widget.c.widget_identifier == p2_span.c.fk_p2_widget,
+        p2_span.c.span_identifier == id)).execute().scalar()
+    selector = 'div[data-span-identifier="' + id + '"]'
+    write_cssrule(plan_id, selector, value)
+
+    
+#def create_labeltext_widget(data,
+#        form_id,
+#        xpos,
+#        ypos,
+#        labeltext,
+#        field_identifier,
+#        defaultvalue,
+#        tab_order,
+#        label_width=150,
+#        text_width=150,
+#        required=True
+#    ):
+#    # widget
+#    insStmt = p2_widget.insert()
+#    result = insStmt.execute(widget_identifier=data.generate_random_identifier(),
+#                             widget_type="labeltext",
+#                             fk_p2_form=form_id,
+#                             tab_order=tab_order)
+#    last_inserted_widget_id = result.inserted_primary_key[0]
+#
+#    # span 1
+#    insStmt = p2_span.insert()
+#    result = insStmt.execute(fk_p2_widget=last_inserted_widget_id,
+#                             span_identifier=data.generate_random_identifier(),
+#                             span_name="label",
+#                             span_type="label",
+#                             span_value=labeltext,
+#                             )
+#    # span 2
+#    insStmt = p2_span.insert()
+#    span_identifier = data.generate_random_identifier()
+#    result = insStmt.execute(fk_p2_widget=last_inserted_widget_id,
+#                             span_identifier=span_identifier,
+#                             span_name="piggyback",
+#                             span_type="alphanumeric",
+#                             span_value=defaultvalue,
+#                             tab_order=tab_order,
+#                             )
+#
+#    fk_field_type = select([p2_fieldtype.c.id], p2_fieldtype.c.field_type == 'textline').execute().scalar()
+#
+#    result = p2_span_alphanumeric.insert().execute(
+#        span_identifier=span_identifier,
+#        field_identifier=field_identifier,
+#        attr_name=field_identifier,
+#        fk_field_type=fk_field_type,
+#        required=required,
+#        )
+#    return data # not really needed, but to stay consistent with the other functions
+#
+
 
 def create_labeltext_widget(data,
         form_id,
@@ -31,20 +141,24 @@ def create_labeltext_widget(data,
     insStmt = p2_widget.insert()
     result = insStmt.execute(widget_identifier=data.generate_random_identifier(),
                              widget_type="labeltext",
-                             css_style="position: absolute; top: " + str(ypos) + "px; left: " + str(xpos) + "px;",
                              fk_p2_form=form_id,
                              tab_order=tab_order)
     last_inserted_widget_id = result.inserted_primary_key[0]
+    css_style="position: absolute; top: " + str(ypos) + "px; left: " + str(xpos) + "px;"
+    write_widget_cssrule(last_inserted_widget_id, css_style)
 
     # span 1
     insStmt = p2_span.insert()
+    span_identifier = data.generate_random_identifier() 
     result = insStmt.execute(fk_p2_widget=last_inserted_widget_id,
-                             span_identifier=data.generate_random_identifier(),
+                             span_identifier=span_identifier,
                              span_name="label",
                              span_type="label",
-                             css_style="width: " + str(label_width) + "px;",
                              span_value=labeltext,
                              )
+    css_style="width: " + str(label_width) + "px;"
+    write_span_cssrule(span_identifier, css_style)
+    
     # span 2
     insStmt = p2_span.insert()
     span_identifier = data.generate_random_identifier()
@@ -54,8 +168,9 @@ def create_labeltext_widget(data,
                              span_type="alphanumeric",
                              span_value=defaultvalue,
                              tab_order=tab_order,
-                             css_style="left:" + str(label_width) + "px; width:" + str(text_width) + "px;",
                              )
+    css_style="left:" + str(label_width) + "px; width:" + str(text_width) + "px;"
+    write_span_cssrule(span_identifier, css_style)
 
     fk_field_type = select([p2_fieldtype.c.id], p2_fieldtype.c.field_type == 'textline').execute().scalar()
 
@@ -72,12 +187,14 @@ def create_labeltext_widget(data,
     
 def insert_save_button(data, form_id, tab_order):
     insStmt = p2_widget.insert()
-    result = insStmt.execute(widget_identifier=data.generate_random_identifier(),
+    identifier = data.generate_random_identifier()
+    result = insStmt.execute(widget_identifier=identifier,
                           widget_type="action",
-                          css_style="position: absolute; top: 270px; left: 0px;",
                           fk_p2_form=form_id,
                           tab_order=tab_order)
     last_inserted_widget_id = result.inserted_primary_key[0]
+    css_style="position: absolute; top: 270px; left: 0px;"
+    write_widget_cssrule(identifier, css_style)
     
     insStmt = p2_span.insert()
     span_identifier = data.generate_random_identifier()
@@ -86,25 +203,27 @@ def insert_save_button(data, form_id, tab_order):
                          span_name="button",
                          span_type="action",
                          span_value="OK",
-                         css_style="width:60px",
                          ) 
+    css_style="width:60px"
+    write_span_cssrule(span_identifier, css_style)
+
     p2_span_action.insert().execute(span_identifier=span_identifier,
                                          msg_reset=False,
                                          msg_close=True
                                          )
-        
-        
-                 
 
 def insert_reset_button(data, form_id, tab_order):    
     # Insert Reset Action widget into form
     insStmt = p2_widget.insert()
-    result = insStmt.execute(widget_identifier=data.generate_random_identifier(),
+    identifier = data.generate_random_identifier()
+    result = insStmt.execute(widget_identifier=identifier,
                           widget_type="action",
-                          css_style="position: absolute; top: 270px; left: 105px",
                           fk_p2_form=form_id,
                           tab_order=tab_order)
     last_inserted_widget_id = result.inserted_primary_key[0]
+    css_style="position: absolute; top: 270px; left: 105px"
+    write_widget_cssrule(identifier, css_style)
+
     # Button span
     span_identifier = data.generate_random_identifier()
     result = p2_span.insert().execute(fk_p2_widget=last_inserted_widget_id,
@@ -112,24 +231,28 @@ def insert_reset_button(data, form_id, tab_order):
                          span_name="button",
                          span_type="action",
                          span_value="Reset",
-                         css_style="width:60px",
                          )
+    css_style="width:60px"
+    write_span_cssrule(span_identifier, css_style)
+
     p2_span_action.insert().execute(span_identifier=span_identifier,
                                          msg_reset=True,
                                          msg_close=False
                                          )
  
-    
 
 def create_relation_widget(data, form_id, xpos, ypos, labeltext, linkage_id, form_name,
                             plan_identifier, tab_order, filter_clause=None, label_visible=True):
     # widget
     insStmt = p2_widget.insert()
-    result = insStmt.execute(widget_identifier=data.generate_random_identifier(),
+    identifier = data.generate_random_identifier()
+    result = insStmt.execute(widget_identifier=identifier,
                              widget_type="relation",
-                             css_style="position: absolute; top: " + str(ypos) + "px; left: " + str(xpos) + "px;",
                              fk_p2_form=form_id,
                              tab_order=tab_order)
+    css_style="position: absolute; top: " + str(ypos) + "px; left: " + str(xpos) + "px;"
+    write_widget_cssrule(identifier, css_style)
+    
     last_inserted_widget_id = result.inserted_primary_key[0]
 
 
@@ -140,24 +263,30 @@ def create_relation_widget(data, form_id, xpos, ypos, labeltext, linkage_id, for
         label_width = 0 # Don't use up space for label
 
     insStmt = p2_span.insert()
+    span_identifier = data.generate_random_identifier()
     result = insStmt.execute(fk_p2_widget=last_inserted_widget_id,
-                             span_identifier=data.generate_random_identifier(),
+                             span_identifier=span_identifier,
                              span_name="label",
                              span_type="label",
-                             css_style="width: " + str(label_width) + "px;",
                              span_value=labeltext,
                              visible=label_visible
                              )
+    css_style="width: " + str(label_width) + "px;"
+    write_span_cssrule(span_identifier, css_style)
+    
     # span 2
     span_identifier = data.generate_random_identifier()
     result = p2_span.insert().execute(fk_p2_widget=last_inserted_widget_id,
                              span_identifier=span_identifier,
                              span_name="piggyback",
                              span_type="relation",
-                             css_style="left:" + str(label_width) + "px;",
                              span_value=None,
                              visible=True
                             )
+    
+    css_style="left:" + str(label_width) + "px;"
+    write_span_cssrule(span_identifier, css_style)
+    
     p2_span_relation.insert().execute(
                                     span_identifier=span_identifier,
                                     fk_p2_linkage=linkage_id,
@@ -177,27 +306,35 @@ def create_checkbox_widget(data, form_id, labeltext, x, y, field_identifier, def
     insStmt = p2_widget.insert()
     result = insStmt.execute(widget_identifier=data.generate_random_identifier(),
                              widget_type="checkbox",
-                             css_style="position: absolute; top: " + str(y) + "px; left: " + str(x) + "px;",
                              fk_p2_form=form_id,
                              tab_order=tab_order)
     last_inserted_widget_id = result.inserted_primary_key[0]
+    css_style="position: absolute; top: " + str(y) + "px; left: " + str(x) + "px;"
+    write_widget_cssrule(last_inserted_widget_id, css_style)
 
+
+    span_identifier = data.generate_random_identifier()
     result = p2_span.insert().execute(fk_p2_widget=last_inserted_widget_id,
-                           span_identifier=data.generate_random_identifier(),
+                           span_identifier=span_identifier,
                            span_name="label",
                            span_type="label",
-                           css_style="width: " + str(label_width) + "px;",
                            span_value=labeltext,
                            )                           
+    css_style="width: " + str(label_width) + "px;"
+    write_span_cssrule(span_identifier, css_style)
+    
     span_identifier = data.generate_random_identifier()
     result = p2_span.insert().execute(fk_p2_widget=last_inserted_widget_id,
                            span_identifier=span_identifier,
                            #field_identifier=field_identifier,
                            span_name="piggyback",
-                           css_style="left:" + str(label_width) + "px;",
                            span_type="checkbox",
                            span_value=default,
                            )
+    
+    css_style="left:" + str(label_width) + "px;"
+    write_span_cssrule(span_identifier, css_style)
+    
     result = p2_span_checkbox.insert().execute(
         span_identifier=span_identifier,
         field_identifier=field_identifier,
@@ -223,22 +360,30 @@ def create_dropdown_widget(
     (target_classname, target_module) = select([p2_plan.c.so_type, p2_plan.c.so_module],
         p2_plan.c.plan_identifier == target_plan).execute().fetchone()
     label_width = 150
+    
+    identifier = migrate_engine.generate_random_identifier()
     result = p2_widget.insert().execute(
-        widget_identifier=migrate_engine.generate_random_identifier(),
+        widget_identifier=identifier,
         widget_type="dropdown",
-        css_style="position: absolute; top: " + str(y) + "px; left: " + str(x) + "px;",
         fk_p2_form=form_id,
         tab_order=tab_order
     )
+    
+    css_style="position: absolute; top: " + str(y) + "px; left: " + str(x) + "px;"
+    write_widget_cssrule(identifier, css_style)
+    
     last_inserted_widget_id = result.inserted_primary_key[0]
+    identifier = migrate_engine.generate_random_identifier()
     result = p2_span.insert().execute(
         fk_p2_widget=last_inserted_widget_id,
-        span_identifier=migrate_engine.generate_random_identifier(),
+        span_identifier=identifier,
         span_name="label",
         span_type="label",
-        css_style="width: " + str(label_width) + "px;",
         span_value=label,
     )                           
+    
+    css_style="width: " + str(label_width) + "px;"
+    write_span_cssrule(identifier, css_style)
 
     linkage_id = migrate_engine.generate_random_identifier()
     result = p2_linkage.insert().execute(
@@ -261,9 +406,11 @@ def create_dropdown_widget(
     p2_span.insert().execute(fk_p2_widget=last_inserted_widget_id,
                            span_identifier=span_identifier,
                            span_name="piggyback",
-                           css_style="left:" + str(label_width) + "px; width: 150px;",
                            span_type="dropdown",
                            )
+    css_style="left:" + str(label_width) + "px; width: 150px;"
+    write_span_cssrule(span_identifier, css_style)
+    
     result = p2_span_dropdown.insert().execute(
         span_identifier=span_identifier,
         fk_p2_linkage=linkage_id,
@@ -271,60 +418,6 @@ def create_dropdown_widget(
         attr_name=target_attr_name,
         required=required,
    ) 
-
-
-def create_labeltext_widget(data,
-        form_id,
-        xpos,
-        ypos,
-        labeltext,
-        field_identifier,
-        defaultvalue,
-        tab_order,
-        label_width=150,
-        text_width=150,
-        required=True
-    ):
-    # widget
-    insStmt = p2_widget.insert()
-    result = insStmt.execute(widget_identifier=data.generate_random_identifier(),
-                             widget_type="labeltext",
-                             css_style="position: absolute; top: " + str(ypos) + "px; left: " + str(xpos) + "px;",
-                             fk_p2_form=form_id,
-                             tab_order=tab_order)
-    last_inserted_widget_id = result.inserted_primary_key[0]
-
-    # span 1
-    insStmt = p2_span.insert()
-    result = insStmt.execute(fk_p2_widget=last_inserted_widget_id,
-                             span_identifier=data.generate_random_identifier(),
-                             span_name="label",
-                             span_type="label",
-                             css_style="width: " + str(label_width) + "px;",
-                             span_value=labeltext,
-                             )
-    # span 2
-    insStmt = p2_span.insert()
-    span_identifier = data.generate_random_identifier()
-    result = insStmt.execute(fk_p2_widget=last_inserted_widget_id,
-                             span_identifier=span_identifier,
-                             span_name="piggyback",
-                             span_type="alphanumeric",
-                             span_value=defaultvalue,
-                             tab_order=tab_order,
-                             css_style="left:" + str(label_width) + "px; width:" + str(text_width) + "px;",
-                             )
-
-    fk_field_type = select([p2_fieldtype.c.id], p2_fieldtype.c.field_type == 'textline').execute().scalar()
-
-    result = p2_span_alphanumeric.insert().execute(
-        span_identifier=span_identifier,
-        field_identifier=field_identifier,
-        attr_name=field_identifier,
-        fk_field_type=fk_field_type,
-        required=required,
-        )
-    return data # not really needed, but to stay consistent with the other functions
 
 
 
@@ -434,27 +527,32 @@ def upgrade(migrate_engine):
     label_width = 95
     # Archetype widget: span 1
     insStmt = data.p2_span.insert()
+    span_identifier=data.generate_random_identifier()
     result = insStmt.execute(fk_p2_widget=last_inserted_widget_id,
-                         span_identifier=data.generate_random_identifier(),
+                         span_identifier=span_identifier,
                          span_name="label",
-                         css_style="width:" + str(label_width) + "px;",
                          span_type="label",
                          span_value="Text",
                          characteristic=None)
+    css_style="width:" + str(label_width) + "px;"
+    write_span_cssrule(span_identifier, css_style)
 
     fk_field_type = select([p2_fieldtype.c.id], p2_fieldtype.c.field_type == 'textline').execute().scalar()  
                      
     # Archetype widget: span 2
-    identifier = data.generate_random_identifier()
+    span_identifier = data.generate_random_identifier()
     result = data.p2_span.insert().execute(fk_p2_widget=last_inserted_widget_id,
-                        span_identifier=identifier,
+                        span_identifier=span_identifier,
                         span_name="piggyback",
                         span_type="alphanumeric",
-                        css_style="left:" + str(label_width) + "px; width:" + str(label_width) + "px;",
                         span_value="",
                         characteristic="text")
+    
+    css_style="left:" + str(label_width) + "px; width:" + str(label_width) + "px;"
+    write_span_cssrule(span_identifier, css_style)
+    
     data.p2_span_alphanumeric.insert().execute(
-        span_identifier=identifier,
+        span_identifier=span_identifier,
         fk_field_type=fk_field_type,
         attr_name='dummy_labeltext_archetype',
         field_identifier='dummy_labeltext_archetype',
@@ -506,9 +604,9 @@ def upgrade(migrate_engine):
     
     # add widgets
     create_labeltext_widget(data, form_id, 0, 0,
-                                         labeltext="Mapping attribute", field_identifier="attr_name", defaultvalue="", tab_order=0)
+        labeltext="Mapping attribute", field_identifier="attr_name", defaultvalue="", tab_order=0)
     create_labeltext_widget(data, form_id, 0, 20,
-                                         labeltext="Foreign key name", field_identifier="foreignkeycol", defaultvalue="", tab_order=1)
+        labeltext="Foreign key name", field_identifier="foreignkeycol", defaultvalue="", tab_order=1)
     
     
     # properties_fileupload form
@@ -541,19 +639,23 @@ def upgrade(migrate_engine):
     insStmt = data.p2_widget.insert()
     result = insStmt.execute(widget_identifier='09087162',
                           widget_type="fileupload",
-                          css_style="position: absolute; top: 60px; left: 0px;",
                           fk_p2_form=migrate_engine.data['archetype_form_id'])
     last_inserted_widget_id = result.inserted_primary_key[0]
+    css_style="position: absolute; top: 60px; left: 0px;"
+    write_widget_cssrule(last_inserted_widget_id, css_style)
     
     # Span 1 for Fileupload widget
     insStmt = data.p2_span.insert()
+    span_identifier = data.generate_random_identifier()
     result = insStmt.execute(fk_p2_widget=last_inserted_widget_id,
-                            span_identifier='62256812',
+                            span_identifier=span_identifier,
                             span_name="label",
                             span_type="label",
                             span_value="Fileupload",
-                            css_style="width: 60px;",
                             characteristic=None)
+    css_style="width: 60px;"
+    write_span_cssrule(span_identifier, css_style)
+
     # Span 2 for Fileupload widget
     identifier = data.generate_random_identifier()
     insStmt = data.p2_span.insert()
@@ -561,11 +663,12 @@ def upgrade(migrate_engine):
                             span_identifier=identifier,
                             span_name="piggyback",
                             span_type="fileupload",
-                            css_style="left: 95px; width:50px; height:50px;",
                             span_value=None,
                             characteristic=None)
     data.p2_span_fileupload.insert().execute(span_identifier=identifier)
-    
+    css_style="left: 95px; width:50px; height:50px;"
+    write_span_cssrule(identifier, css_style)   
+ 
     #
     # Checkbox 
     #
@@ -622,20 +725,23 @@ def upgrade(migrate_engine):
     insStmt = data.p2_widget.insert()
     result = insStmt.execute(widget_identifier='09087262',
                           widget_type="checkbox",
-                          css_style="position: absolute; top: 30px; left: 0px;",
                           fk_p2_form=migrate_engine.data['archetype_form_id'])
     last_inserted_widget_id = result.inserted_primary_key[0]
+    css_style="position: absolute; top: 30px; left: 0px;"
+    write_widget_cssrule(last_inserted_widget_id, css_style)
     
     label_width = 95
     # Archetype widget: span 1
     insStmt = data.p2_span.insert()
+    span_identifier = data.generate_random_identifier()
     result = insStmt.execute(fk_p2_widget=last_inserted_widget_id,
-                            span_identifier='62256862',
+                            span_identifier=span_identifier,
                             span_name="label",
-                            css_style="width:" + str(label_width) + "px;",
                             span_type="label",
                             span_value="Checkbox",
                             characteristic=None)
+    css_style="width:" + str(label_width) + "px;"
+    write_span_cssrule(span_identifier, css_style)
                             
     # Archetype widget: span 2
     identifier = data.generate_random_identifier()
@@ -643,11 +749,14 @@ def upgrade(migrate_engine):
                             span_identifier=identifier,
                             span_name="piggyback",
                             span_type="checkbox",
-                            css_style="left:" + str(label_width) + "px;",
                             span_value=None,
                             characteristic=None)
     data.p2_span_checkbox.insert().execute(span_identifier=identifier)
+    css_style="left:" + str(label_width) + "px;"
+    write_span_cssrule(identifier, css_style)
     
+        
+
     # --- RELATION ---
 
     #
@@ -818,23 +927,28 @@ def upgrade(migrate_engine):
     # Relation archetype.
     #
     insStmt = data.p2_widget.insert()
-    result = insStmt.execute(widget_identifier=data.generate_random_identifier(),
+    widget_identifier=data.generate_random_identifier()
+    result = insStmt.execute(widget_identifier=widget_identifier,
                           widget_type="relation",
-                          css_style="position: absolute; top: 130px; left: 0px;",
                           fk_p2_form=migrate_engine.data['archetype_form_id'])
+    css_style="position: absolute; top: 130px; left: 0px;"
+    write_widget_cssrule(widget_identifier, css_style)
+
     last_inserted_widget_id = result.inserted_primary_key[0]
     
     
     label_width = 95
     # Archetype widget: span 1
     insStmt = data.p2_span.insert()
+    span_identifier = data.generate_random_identifier()
     result = insStmt.execute(fk_p2_widget=last_inserted_widget_id,
-                         span_identifier=data.generate_random_identifier(),
+                         span_identifier=span_identifier,
                          span_name="label",
-                         css_style="width:" + str(label_width) + "px;",
                          span_type="label",
                          span_value="Relation",
                          characteristic=None)
+    css_style="width:" + str(label_width) + "px;"
+    write_span_cssrule(span_identifier, css_style)
                          
     # Archetype widget: span 2
     identifier = data.generate_random_identifier()
@@ -842,9 +956,11 @@ def upgrade(migrate_engine):
                         span_identifier=identifier,
                         span_name="piggyback",
                         span_type="relation",
-                        css_style="left:" + str(label_width) + "px; width: 50px; height:50px;",
                         span_value="",
                         characteristic=None)
+    css_style="left:" + str(label_width) + "px; width: 50px; height:50px;"
+    write_span_cssrule(identifier, css_style)
+    
     id = data.generate_random_identifier()
     data.p2_linkage.insert().execute(
         id=id,
@@ -858,7 +974,7 @@ def upgrade(migrate_engine):
     # Dropdown
     #
     result = data.p2_plan.insert().execute(plan_identifier='p2_span_dropdown',
-                             so_module='p2.datashackle.core.models.span.dropdown',
+                             so_module='p2.datashackle.management.span.dropdown',
                              so_type='Dropdown')
     dropdown_plan_id = result.inserted_primary_key[0]
     
@@ -867,7 +983,7 @@ def upgrade(migrate_engine):
                              attr_name='linkage',
                              ref_type='object',
                              foreignkeycol='fk_p2_linkage',
-                             source_module='p2.datashackle.core.models.span.dropdown',
+                             source_module='p2.datashackle.management.span.dropdown',
                              source_classname='Dropdown',
                              target_classname='Linkage',
                              target_module='p2.datashackle.core.models.linkage',
@@ -1006,22 +1122,26 @@ def upgrade(migrate_engine):
     # Dropdown archetype.
     #
     insStmt = data.p2_widget.insert()
-    result = insStmt.execute(widget_identifier=data.generate_random_identifier(),
+    identifier = data.generate_random_identifier()
+    result = insStmt.execute(widget_identifier=identifier,
                           widget_type="dropdown",
-                          css_style="position: absolute; top: 190px; left: 0px;",
                           fk_p2_form=migrate_engine.data['archetype_form_id'])
     last_inserted_widget_id = result.inserted_primary_key[0]
+    css_style="position: absolute; top: 190px; left: 0px;"
+    write_widget_cssrule(identifier, css_style)
     
     label_width = 95
     # Archetype span 1
     insStmt = data.p2_span.insert()
+    identifier = data.generate_random_identifier()
     result = insStmt.execute(fk_p2_widget=last_inserted_widget_id,
-                         span_identifier=data.generate_random_identifier(),
+                         span_identifier=identifier,
                          span_name="label",
-                         css_style="width:" + str(label_width) + "px;",
                          span_type="label",
                          span_value="Dropdown",
                          characteristic=None)
+    css_style="width:" + str(label_width) + "px;"
+    write_span_cssrule(identifier, css_style)
                          
     # Archetype span 2
     identifier = data.generate_random_identifier()
@@ -1029,9 +1149,11 @@ def upgrade(migrate_engine):
                         span_identifier=identifier,
                         span_name="piggyback",
                         span_type="dropdown",
-                        css_style="left:" + str(label_width) + "px; width: 95px;",
                         span_value="",
                         characteristic=None)
+    css_style="left:" + str(label_width) + "px; width: 95px;"
+    write_span_cssrule(identifier, css_style)
+
     id = data.generate_random_identifier()
     data.p2_linkage.insert().execute(
         id=id,
@@ -1047,6 +1169,14 @@ def upgrade(migrate_engine):
     create_labeltext_widget(data, migrate_engine.data['p2_plan_form_id'], 0, 20, 'Setobject class name', 'so_type', None, tab_order=1, text_width=250)
    
 
+
+    # write stylesheets out to disk
+    for (stylesheet_name, stylesheet) in stylesheets.items():
+        stylesheet_filepath = os.path.join(path_styles, stylesheet_name)
+        fh = open(stylesheet_filepath, 'w+')
+        fh.write(stylesheet.cssText)
+        fh.close()
+    
 def downgrade(migrate_engine):
     pass
 

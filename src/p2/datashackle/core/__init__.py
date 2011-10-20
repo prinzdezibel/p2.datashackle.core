@@ -13,6 +13,7 @@ def setup(settings_db):
     import p2.datashackle.core
     scanner = venusian.Scanner()
     scanner.scan(p2.datashackle.core, categories=('datashackle',))
+    scanner.scan(p2.datashackle.management, categories=('datashackle',))
 
     # do orm mapping
     from p2.datashackle.core.models import mapping

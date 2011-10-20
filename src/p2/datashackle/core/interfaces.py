@@ -44,10 +44,6 @@ class IRelation(Interface):
 class IWidgetType(Interface):
     pass
 
-
 class ISpanType(Interface):
     pass
 
-class IJsonInfoQuery(Interface):
-    """ Allows to query for JSON info objects that can be returned to a javascript client through Ajax.
-    So far, this is used to gather info about the table identifiers for all the plans in the application. """
