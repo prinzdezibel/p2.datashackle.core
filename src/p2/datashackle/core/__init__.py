@@ -2,7 +2,10 @@
 
 """API for datashackle core package."""
 
+import venusian
+
 from p2.datashackle.core.models.setobject_types import SetobjectType as Model
+
 
 def setup(settings_db):
     from p2.datashackle.core.db_utility import DbUtility
@@ -38,7 +41,6 @@ class model_config(object):
             from p2.datashackle.core.app.setobjectreg import setobject_type_registry
             setobject_type_registry.register_type(factory, self.maporder)
 
-        import venusian
         info = venusian.attach(wrapped, callback, category='datashackle')
 
         if info.scope == 'class':

@@ -12,7 +12,6 @@ class SetobjectTableRegistry(object):
     def register_type(self, module_name, class_name, table_name, table_type):
         """Creates a SQLAlchemy table object from a given file and registers it in the registry.
         """
-        
         # store it in registry under two different keys
         self._table_name[table_name] = table_type
         key = self._assemble_key(module_name, class_name)

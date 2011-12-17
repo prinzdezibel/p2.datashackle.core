@@ -5,14 +5,16 @@
 import grok
 import logging
 
-from sqlalchemy import orm, Table, String, Column, Boolean, ForeignKey
+from sqlalchemy import orm, String, Column, Boolean, ForeignKey, Table
 
 from p2.datashackle.core.app.exceptions import *
-from p2.datashackle.core.app.setobjectreg import setobject_table_registry, setobject_type_registry#, setobject_name_registry
+from p2.datashackle.core.app.setobjectreg import setobject_table_registry, setobject_type_registry
 from p2.datashackle.core.sql import get_tables, field_exists
 from p2.datashackle.core.globals import metadata
+from p2.datashackle.core.models.cardinality import Cardinality
+from p2.datashackle.core.models.linkage import Linkage
+from p2.datashackle.core.models.relation import Relation
 from p2.datashackle.core.models.setobject_types import create_setobject_type
-from p2.datashackle.core.models.table import Table
 from p2.datashackle.core.interfaces import IRelationalDatabaseOpened 
 
 
@@ -65,16 +67,20 @@ def map_field_attr(table_name, field_identifier, column_type):
 
 def needs_mapping(setobject_type, exclude_sys_tables):
     table_name = setobject_type.get_table_name()
-    if table_name == 'p2_cardinality' or table_name == 'p2_linkage':
+    if table_name == 'p2_cardinality' or \
+            table_name == 'p2_relation' or \
+            table_name == 'p2_linkage':
         return False
     if exclude_sys_tables and table_name.startswith('p2_'):
         return False
     return True
 
 def map_tables(exclude_sys_tables=False):
-    # Map bootstrap orm Linkage object by hand
+    # Map bootstrap orm Linkage object (and dependent objects 
+    # Relation and Cardinality) by hand
     if not exclude_sys_tables:
-        from p2.datashackle.core.models.linkage import Linkage
+        Cardinality.sa_map()
+        Relation.sa_map() 
         Linkage.sa_map()
 
     # First, create all properties for the orm.relation method. This is a separate step,
@@ -83,7 +89,6 @@ def map_tables(exclude_sys_tables=False):
     for setobject_type in setobject_type_registry.values():
         if needs_mapping(setobject_type, exclude_sys_tables):
             try:
-                # Map everything except the p2_cardinality table (already done by the Linkage)
                 setobject_type.compute_mapper_properties()
             except NoPrimaryKeyException:
                 # Table has no primary key, don't map it
