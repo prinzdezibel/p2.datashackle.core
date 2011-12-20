@@ -142,7 +142,7 @@ class SetobjectType(object):
                 "model_config decorator to specify the table name "
                 "for class %r" % cls)
         return table_name
-    
+
     @classmethod
     def get_table_class(cls):
         return setobject_table_registry.lookup_by_table(cls.get_table_name())
