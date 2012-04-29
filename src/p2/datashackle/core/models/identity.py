@@ -7,5 +7,5 @@ import random
 
 def generate_random_identifier():
     n_id = random.randint(0, 100000000)
-    id = "%08d" % n_id
+    id = "%010d" % n_id
     return id
