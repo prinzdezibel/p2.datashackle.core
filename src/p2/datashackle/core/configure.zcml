@@ -6,4 +6,5 @@
   <i18n:registerTranslations directory="locales" />
  
   <grok:grok package="." />
+
 </configure>

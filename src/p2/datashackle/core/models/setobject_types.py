@@ -22,6 +22,11 @@ from p2.datashackle.core.interfaces import IDbUtility
 from p2.datashackle.core.models.identity import generate_random_identifier
 
 
+class classproperty(property):
+    def __get__(self, cls, owner):
+        return self.fget.__get__(None, owner)()
+
+
 def create_setobject_type(table_name, do_mapping=True):
     """Create a setobject derived ORM type at runtime."""
     
@@ -146,7 +151,11 @@ class SetobjectType(object):
     @classmethod
     def get_table_class(cls):
         return setobject_table_registry.lookup_by_table(cls.get_table_name())
- 
+    
+    # Provide a class method property to get table class
+    # http://stackoverflow.com/questions/128573/using-property-on-classmethods
+    table = classproperty(get_table_class)
+    
     def _get_id(self):
         """Returns the value of the setobject instance's mapped primarykey column."""
         pk_attr_name = self.get_primary_key_attr_name()

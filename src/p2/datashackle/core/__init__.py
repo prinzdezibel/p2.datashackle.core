@@ -1,22 +1,29 @@
 # -*- coding: utf-8 -*-
 
-"""API for datashackle core package."""
-
+import grok
 import venusian
+
+from pyramid.events import subscriber
+from zope.app.appsetup.product import getProductConfiguration
 
 from p2.datashackle.core.models.setobject_types import SetobjectType as Model
 
 
-def setup(settings_db):
+from zope.app.wsgi.interfaces import WSGIPublisherApplicationCreated
+@grok.subscribe(WSGIPublisherApplicationCreated)
+def grok_init(event):
+    config = getProductConfiguration('setmanager')
+    init_datashackle_core(config)
+    
+
+def init_datashackle_core(settings_db):
     from p2.datashackle.core.db_utility import DbUtility
     # Instantiate the db utility to setup database connectivity.
     DbUtility(settings_db)
     
-    import venusian
     import p2.datashackle.core
     scanner = venusian.Scanner()
     scanner.scan(p2.datashackle.core, categories=('datashackle',))
-    scanner.scan(p2.datashackle.management, categories=('datashackle',))
 
     # do orm mapping
     from p2.datashackle.core.models import mapping

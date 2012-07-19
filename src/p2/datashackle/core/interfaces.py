@@ -46,4 +46,3 @@ class IWidgetType(Interface):
 
 class ISpanType(Interface):
     pass
-

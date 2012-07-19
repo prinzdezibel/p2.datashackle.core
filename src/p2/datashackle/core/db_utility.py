@@ -67,16 +67,16 @@ class DbUtility(object):
         """Builds the connection string.
         Read also: http://www.sqlalchemy.org/docs/dialects/mysql.html#character-sets
         """
-        if self.settings['provider'] == 'mysql':
+        if self.settings['db_provider'] == 'mysql':
             provider = 'mysql+mysqldb'
         else:
-            provider = self.settings['provider']
+            provider = self.settings['db_provider']
         return "%s://%s:%s@%s/%s?charset=utf8&use_unicode=0" % (
             provider,
-            self.settings['user'],
-            self.settings['password'],
-            self.settings['host'],
-            self.settings['db'])
+            self.settings['db_user'],
+            self.settings['db_password'],
+            self.settings['db_host'],
+            self.settings['db_name'])
         
         
     #def isDatabaseAvailable(self, ignoreLock=False):

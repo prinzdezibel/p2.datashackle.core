@@ -28,7 +28,8 @@ setup(name='p2.datashackle.core',
           'MySQL-python',
           'grok',
           'venusian',
-          'lxml'
+          'lxml',
+          'pyramid'
           ],
       entry_points="""
       # -*- Entry points: -*-
