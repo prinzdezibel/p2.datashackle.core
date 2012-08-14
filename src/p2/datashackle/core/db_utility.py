@@ -67,53 +67,15 @@ class DbUtility(object):
         """Builds the connection string.
         Read also: http://www.sqlalchemy.org/docs/dialects/mysql.html#character-sets
         """
-        if self.settings['db_provider'] == 'mysql':
+        if self.settings['datashackle.db_provider'] == 'mysql':
             provider = 'mysql+mysqldb'
         else:
-            provider = self.settings['db_provider']
+            provider = self.settings['datashackle.db_provider']
         return "%s://%s:%s@%s/%s?charset=utf8&use_unicode=0" % (
             provider,
-            self.settings['db_user'],
-            self.settings['db_password'],
-            self.settings['db_host'],
-            self.settings['db_name'])
+            self.settings['datashackle.db_user'],
+            self.settings['datashackle.db_password'],
+            self.settings['datashackle.db_host'],
+            self.settings['datashackle.db_name'])
         
         
-    #def isDatabaseAvailable(self, ignoreLock=False):
-    #    """ Update internal variables, check if database is available
-    #        Can return either True (is available) or False (not available - don't use SQLAlchemy session!!)
-    #    """
-    #    if self.db_locked and not ignoreLock:
-    #        return False
-    #    if self.engine:
-    #        return True
-    #    self.updateDatabase(True, ignoreLock)
-    #    if not self.engine:
-    #        return False
-    #    return True
-        
-    ## properties
-    #@property
-    #def db_host(self):
-    #    if (self.vars == None):
-    #        return None
-    #    return self.vars['host']
-    #
-    #@property
-    #def db_provider(self):
-    #    if (self.vars == None):
-    #        return None
-    #    return self.vars['provider']
-    #
-    #@property
-    #def db_name(self):
-    #    if (self.vars == None):
-    #        return None
-    #    return self.vars['db_name']
-
-#@grok.subscribe(IDatabaseOpenedWithRootEvent)
-#def GetAvailableSchemaVersions(event):
-#    config = getProductConfiguration('setmanager')
-#    buildout_root = config['buildout_root']
-#    db_utility = getUtility(IDbUtility)
-#    db_utility.schemaversion = int(Popen([buildout_root + "/bin/sqlversioning.py","version"], stdout=PIPE).communicate()[0])
