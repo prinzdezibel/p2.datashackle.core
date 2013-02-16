@@ -7,7 +7,7 @@ from sqlalchemy import orm
 from p2.datashackle.core import Model, model_config  
 
 
-@model_config(tablename='p2_cardinality')
+@model_config()
 class Cardinality(Model):
 
     @classmethod

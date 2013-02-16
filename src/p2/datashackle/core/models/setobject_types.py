@@ -27,13 +27,13 @@ class classproperty(property):
         return self.fget.__get__(None, owner)()
 
 
-def create_setobject_type(table_name, do_mapping=True):
+def create_setobject_type(class_name, table_name, do_mapping=True):
     """Create a setobject derived ORM type at runtime."""
     
     # The third parameter of builtin function 'type' is a dictionary which becomes the class' __dict__. We define the __init__
     # function that gets called whenever the setobject type is instantiated and its purpose is to call the
     # base class' (SetobjectType) __init__ function.
-    setobject_type = type(table_name, (SetobjectType, ), {'__init__': lambda x: super(setobject_type, x).__init__()})
+    setobject_type = type(class_name, (SetobjectType, ), {'__init__': lambda x: super(setobject_type, x).__init__()})
 
     setobject_type.table_name = table_name 
 
@@ -58,8 +58,6 @@ class SetobjectType(object):
     # instead.
     linkages = dict()  
 
-    table_name = None
-    
     def __init__(self):
         if not self.id:
             self.id = generate_random_identifier()
@@ -127,7 +125,7 @@ class SetobjectType(object):
     @classmethod
     def get_column(cls, name):
         """Returns a column by name"""
-        table_type = setobject_table_registry.lookup_by_class(cls.__module__, cls.__name__)
+        table_type = setobject_table_registry.lookup_by_class(cls.__name__)
         return getattr(table_type.c, name)
    
     @classmethod
@@ -141,12 +139,7 @@ class SetobjectType(object):
        
     @classmethod
     def get_table_name(cls):
-        table_name = cls.table_name
-        if table_name is None:
-            raise Exception("No table name specified. Please use the "
-                "model_config decorator to specify the table name "
-                "for class %r" % cls)
-        return table_name
+        return cls.table_name
 
     @classmethod
     def get_table_class(cls):
@@ -195,12 +188,12 @@ class SetobjectType(object):
         
     @classmethod
     def fetch_linkages(cls):
-        # get all linkages associated with ourselves
+        # deferred imports
         from p2.datashackle.core.models.linkage import Linkage
-        linkagelist = getUtility(IDbUtility).Session().query(Linkage).filter(
-            and_(Linkage.source_module == cls.__module__, 
-            Linkage.source_classname == cls.__name__)
-        ).all()
+        from p2.datashackle.core.models.model import Model
+        linkagelist = getUtility(IDbUtility).Session().query(Linkage).join(
+            (Model, Model.plan_identifier==Linkage.fk_source_model)).filter(
+            Model.klass == cls.__name__).all()
         cls.linkages = dict()
         for linkage in linkagelist:
              cls.linkages[linkage.attr_name] = linkage
@@ -212,9 +205,7 @@ class SetobjectType(object):
         cls.fetch_linkages()
         for linkage in cls.linkages.itervalues():
             mappedsotype = setobject_type_registry.lookup(
-                linkage.target_module,
-                linkage.target_classname
-            )
+                linkage.target_model.klass)
 
             if linkage.cardinality.id != 'NONE':
                 # TODO: Don't pass properties. This is a nasty hack! 

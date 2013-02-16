@@ -25,17 +25,26 @@ def table_exists(table_name):
     else:
         raise UnspecificException("Unknown database provider.")
     return db_utility.engine.execute(stmt).first() is not None
-     
 
-def get_tables():
+def select_tables(klass=None):
     db_utility = getUtility(IDbUtility)
     if db_utility.settings['datashackle.db_provider'] == 'mysql':
-        stmt = "SELECT TABLE_NAME FROM information_schema.TABLES " \
-            "WHERE TABLE_SCHEMA = '" + db_utility.settings['datashackle.db_name'] + "' AND " \
-            "TABLE_TYPE = 'BASE TABLE'"
+        stmt = "SELECT klass, `table` FROM p2_plan"
+        if klass:
+            stmt += " WHERE klass = '%s'" % klass
     else:
         raise UnspecificException("Unknown database provider.")
     return db_utility.engine.execute(stmt)
+
+#def get_tables():
+#    db_utility = getUtility(IDbUtility)
+#    if db_utility.settings['datashackle.db_provider'] == 'mysql':
+#        stmt = "SELECT TABLE_NAME FROM information_schema.TABLES " \
+#            "WHERE TABLE_SCHEMA = '" + db_utility.settings['datashackle.db_name'] + "' AND " \
+#            "TABLE_TYPE = 'BASE TABLE'"
+#    else:
+#        raise UnspecificException("Unknown database provider.")
+#    return db_utility.engine.execute(stmt)
 
 def field_exists(table_identifier, field_identifier):
     db_utility = getUtility(IDbUtility)

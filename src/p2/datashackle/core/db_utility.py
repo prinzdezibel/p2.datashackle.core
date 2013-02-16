@@ -7,7 +7,6 @@ import sys
 import logging
 import zope.component
 
-from subprocess import Popen,PIPE
 from sqlalchemy import create_engine, MetaData, text
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.exc import OperationalError

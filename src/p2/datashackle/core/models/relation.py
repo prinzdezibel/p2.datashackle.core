@@ -15,7 +15,7 @@ from p2.datashackle.core.models.cardinality import Cardinality
 from p2.datashackle.core.sql import field_exists
 
 
-@model_config(tablename='p2_relation')
+@model_config()
 class Relation(Model):
     """The relation class represents and manages database relations.
     """    
@@ -34,7 +34,6 @@ class Relation(Model):
     @classmethod
     def sa_map(cls):
         cardinality_type = setobject_type_registry.lookup(
-            'p2.datashackle.core.models.cardinality',
             'Cardinality'
         )
         orm.mapper(cls,
@@ -184,7 +183,7 @@ class Relation(Model):
             mytable.create()
             
             # Create setobject type
-            create_setobject_type(self.relation.xref_table)
+            create_setobject_type(self.relation.xref_table, self.relation.xref_table)
         else:
             # Alter table to have the new columns if they aren't there yet
             mytable = Table(self.relation.xref_table, metadata, autoload=True, useexisting=True)

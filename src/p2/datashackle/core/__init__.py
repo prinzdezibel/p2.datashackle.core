@@ -7,19 +7,31 @@ from pyramid.events import subscriber
 from zope.app.appsetup.product import getProductConfiguration
 
 from p2.datashackle.core.models.setobject_types import SetobjectType as Model
+from p2.datashackle.core.sql import select_tables
 
 
 from zope.app.wsgi.interfaces import WSGIPublisherApplicationCreated
 @grok.subscribe(WSGIPublisherApplicationCreated)
 def grok_init(event):
     config = getProductConfiguration('setmanager')
-    init_datashackle_core(config)
-    
+    init_db(config)
+    init_datashackle_core()
 
-def init_datashackle_core(settings_db):
+def init_datashackle(main):
+    def inner(global_config, **settings):
+        init_db(settings)
+        app = main(global_config, **settings)
+        init_datashackle_core()
+        return app
+    return inner    
+
+def init_db(settings_db):
     from p2.datashackle.core.db_utility import DbUtility
     # Instantiate the db utility to setup database connectivity.
     DbUtility(settings_db)
+
+
+def init_datashackle_core():
     
     import p2.datashackle.core
     scanner = venusian.Scanner()
@@ -37,14 +49,19 @@ def Session():
 
 class model_config(object): 
     
-    def __init__(self, tablename, maporder=1):
-        self.tablename = tablename
+    def __init__(self, maporder=1):
         self.maporder = maporder        
 
     def __call__(self, wrapped):
 
         def callback(context, name, factory):
-            wrapped.table_name = self.tablename 
+            klass = factory.__name__
+            proxy = select_tables(klass)
+            rec = proxy.first()
+            if not rec:
+                raise Exception("No table for class %s." % klass)
+            rec = dict(rec)
+            wrapped.table_name = rec['table']
             from p2.datashackle.core.app.setobjectreg import setobject_type_registry
             setobject_type_registry.register_type(factory, self.maporder)
 
@@ -60,13 +77,12 @@ class model_config(object):
       
         return wrapped
 
-def _model_config(tablename, maporder=1):
-    def decorator(factory):
-        factory.table_name = tablename 
-        from p2.datashackle.core.app.setobjectreg import setobject_type_registry
-        setobject_type_registry.register_type(factory, maporder)
-        return factory
-    return decorator
+#def _model_config(maporder=1):
+#    def decorator(factory):
+#        from p2.datashackle.core.app.setobjectreg import setobject_type_registry
+#        setobject_type_registry.register_type(factory, maporder)
+#        return factory
+#    return decorator
 
 
 

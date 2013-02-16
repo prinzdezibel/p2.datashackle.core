@@ -15,7 +15,7 @@ from p2.datashackle.core.app.setobjectreg import setobject_type_registry, setobj
 from p2.datashackle.core.sql import field_exists
 from p2.datashackle.core.globals import metadata
 from p2.datashackle.core.interfaces import *
-from p2.datashackle.core.models.setobject_types import SetobjectType, create_setobject_type
+from p2.datashackle.core.models.setobject_types import SetobjectType
 from p2.datashackle.core.models.relation import Relation
 
 
@@ -35,7 +35,7 @@ class WidgetCollectionClass(OrderedDict, MappedCollection):
         OrderedDict.__init__(self, *args, **kw)
 
 
-@model_config(tablename='p2_linkage')
+@model_config()
 class Linkage(SetobjectType):
         
     def __init__(self):
@@ -58,24 +58,26 @@ class Linkage(SetobjectType):
         #cls.sa_map_dispose()
         #cardinality_type.sa_map_dispose()
         #orm.mapper(cardinality_type, cardinality_table)
-        Relation = setobject_type_registry.lookup(
-            'p2.datashackle.core.models.relation',
-            'Relation'
-        )
+        Relation = setobject_type_registry.lookup('Relation')
+        Model = setobject_type_registry.lookup('Model')
         orm.mapper(cls,
             cls.get_table_class(),
             properties={'relation': orm.relation(
                 Relation,
                 uselist=False,
-                primaryjoin = (Relation.get_table_class().c.id == cls.get_table_class().c.fk_p2_relation)
-            )},
+                primaryjoin = (Relation.get_table_class().c.id == cls.get_table_class().c.fk_p2_relation)),
+            'source_model': orm.relation(Model, uselist=False,
+                primaryjoin= (Model.get_table_class().c.plan_identifier == cls.get_table_class().c.fk_source_model)),
+            'target_model': orm.relation(Model, uselist=False,
+                primaryjoin= (Model.get_table_class().c.plan_identifier == cls.get_table_class().c.fk_target_model))
+            }
         )
       
     def compute_orm_properties(self, THIS_IS_A_DIRTY_HACK_PROPERTIES_DICT):
-        mappedsotype = setobject_type_registry.lookup(self.target_module, self.target_classname)
+        mappedsotype = setobject_type_registry.lookup(self.target_model.klass)
         xref_table_class = None
-        sourcetable = setobject_table_registry.lookup_by_class(self.source_module, self.source_classname)
-        targettable = setobject_table_registry.lookup_by_class(self.target_module, self.target_classname)
+        sourcetable = setobject_table_registry.lookup_by_class(self.source_model.klass)
+        targettable = setobject_table_registry.lookup_by_class(self.target_model.klass)
         if self.cardinality.id == 'MANY_TO_ONE' or \
                 self.cardinality.id == 'ONE(FK)_TO_ONE':
             # take primary key on our side
@@ -88,8 +90,8 @@ class Linkage(SetobjectType):
             # take primary key on other side
             primaryfk = getattr(targettable.c, self.relation.foreignkeycol)
             primaryidentifier = getattr(
-            sourcetable.c,
-                setobject_type_registry.lookup(self.source_module, self.source_classname).get_primary_key_attr_name()
+                sourcetable.c,
+                setobject_type_registry.lookup(self.source_model.klass).get_primary_key_attr_name()
             )
             primaryjoin = (primaryfk == primaryidentifier)
             secondaryjoin = None
@@ -111,7 +113,8 @@ class Linkage(SetobjectType):
             # This mapping should really not happen here and now.
             # Instead, the linkage MUST be persisted into
             # table p2_linkage at save time!
-            THIS_IS_A_DIRTY_HACK_PROPERTIES_DICT[self.attr_name] = orm.relation(mappedsotype,
+            THIS_IS_A_DIRTY_HACK_PROPERTIES_DICT[self.attr_name] = orm.relation(
+                mappedsotype,
                 uselist=False,
                 cascade=self.cascade,
                 back_populates=self.back_populates,
@@ -135,13 +138,13 @@ class Linkage(SetobjectType):
             # dictionary, but rather as an orderable dictionary. This is necessary to retain the insert order
             # as a ordinary dict isn't ordered. Consider this to be implemented in a more generic way if this
             # use case is occuring for user relations as well.
-            if self.attr_name == 'spans' and self.source_classname == 'WidgetType':
+            if self.attr_name == 'spans' and self.source_model.klass == 'WidgetType':
                 collection_class=SpanCollectionClass
                 span_table = setobject_table_registry.lookup_by_table('p2_span')
                 order_by=span_table.c.order
             
             # This is another special case to ensure the widgets being tab ordered
-            if self.attr_name == 'widgets' and self.source_classname == 'FormType':
+            if self.attr_name == 'widgets' and self.source_model.klass == 'FormType':
                 collection_class = WidgetCollectionClass
                 widget_table = setobject_table_registry.lookup_by_table('p2_widget')
                 order_by=widget_table.c.tab_order

@@ -9,4 +9,3 @@ from sqlalchemy import *
 metadata = MetaData()
 
 
-manager_preferences = None
