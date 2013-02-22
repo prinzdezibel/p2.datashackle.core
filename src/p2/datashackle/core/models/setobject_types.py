@@ -48,6 +48,9 @@ def create_setobject_type(class_name, table_name, do_mapping=True):
     
     return setobject_type
      
+from sqlalchemy import and_
+from sqlalchemy.orm import class_mapper
+from sqlalchemy.orm.properties import RelationshipProperty
    
 class SetobjectType(object):
     """ORM base class for all sqlalchemy mapped tables. Setobjects are instances of derived classes from this class."""
@@ -72,20 +75,39 @@ class SetobjectType(object):
         self.action = "save"
         self.common_init()
 
-    def common_init(self):
-        def link(class_):
-            class_.fetch_linkages()
-            for linkage in class_.linkages.itervalues():
-                self.collections[linkage.attr_name] = {
-                    'collection_id': generate_random_identifier(),
-                    'linkage': linkage,
-                    }
 
+    def common_init(self):
         self.collections = {}
-        link(self.__class__)
-        for base_class in self.__class__.__bases__:
+        self.link(self.__class__)
+        self.walk_bases(self.__class__)
+        #pk_keys = set([c.key for c in class_mapper(self.__class__).primary_key])
+        #relations = [p for p in class_mapper(self.__class__).iterate_properties 
+        #                if p.key not in pk_keys and
+        #                   p.__class__ == RelationshipProperty]
+        #
+        #for relation in relations:
+        #    from p2.datashackle.core.models.linkage import Linkage
+        #    from p2.datashackle.core.models.model import Model
+        #    linkage = getUtility(IDbUtility).Session().query(Linkage).join(
+        #        (Model, Model.plan_identifier==Linkage.fk_source_model)).filter(
+        #        and_(Model.klass == self.__class__.__name__, Linkage.attr_name == relation.key)).one()
+        #    self.collections[relation.key] = {
+        #        'collection_id': generate_random_identifier(),
+        #        'linkage': linkage}
+
+    def link(self, klass):
+        klass.fetch_linkages()
+        for linkage in klass.linkages.itervalues():
+            self.collections[linkage.attr_name] = {
+                'collection_id': generate_random_identifier(),
+                'linkage': linkage}
+        
+
+    def walk_bases(self, cls):
+        for base_class in cls.__bases__:
             if issubclass(base_class, SetobjectType) and base_class != SetobjectType:
-                link(base_class)
+                self.walk_bases(base_class)
+                self.link(base_class)
     
     def get_object_state(self):
         if object_session(self) is None and not has_identity(self):

@@ -6,8 +6,6 @@ from zope.interface import Interface
 from zope.location.interfaces import ILocation
 
         
-class ILocationProvider(Interface):
-    """Provides means to make a p2.plan instance locatable to address it by URL. """
 
 class IDbUtility(Interface):
     """A utility that provides sqlalchemy sessions."""
