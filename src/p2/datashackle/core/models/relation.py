@@ -44,22 +44,16 @@ class Relation(Model):
             )},
         )
     
-    def create_relation(self, characteristic):
+    def create_relation(self):
         # Check whether the target table actually exists
         try:
             targetobj = setobject_type_registry.lookup_by_table(self.target_table)
         except KeyError:
             raise UserException("The table '" + self.target_classname + "' specified as target table does not exist")
            
-        if characteristic == 'ADJACENCY_LIST':
-            pass
-            #self._create_adjacency_list_relation()
-        elif characteristic == 'LIST':
-            self._create_list_relation()
-        else:
-            raise Exception("Unknown relation characteristic.")
+        self._create_relation()
 
-    def _create_list_relation(self):
+    def _create_relation(self):
         if self.cardinality.id == 'ONE_TO_MANY' or \
                 self.cardinality.id == 'ONE_TO_ONE(FK)':
             # Create Foreign key and re-map setobject if necessary
