@@ -212,10 +212,10 @@ class SetobjectType(object):
     def fetch_linkages(cls):
         # deferred imports
         from p2.datashackle.core.models.linkage import Linkage
-        from p2.datashackle.core.models.model import Model
+        from p2.datashackle.core.models.model import StrippedModel
         linkagelist = getUtility(IDbUtility).Session().query(Linkage).join(
-            (Model, Model.plan_identifier==Linkage.fk_source_model)).filter(
-            Model.klass == cls.__name__).all()
+            (StrippedModel, StrippedModel.plan_identifier==Linkage.fk_source_model)).filter(
+            StrippedModel.klass == cls.__name__).all()
         cls.linkages = dict()
         for linkage in linkagelist:
              cls.linkages[linkage.attr_name] = linkage

@@ -59,17 +59,17 @@ class Linkage(SetobjectType):
         #cardinality_type.sa_map_dispose()
         #orm.mapper(cardinality_type, cardinality_table)
         Relation = setobject_type_registry.lookup('Relation')
-        Model = setobject_type_registry.lookup('Model')
+        StrippedModel = setobject_type_registry.lookup('StrippedModel')
         orm.mapper(cls,
             cls.get_table_class(),
             properties={'relation': orm.relation(
                 Relation,
                 uselist=False,
                 primaryjoin = (Relation.get_table_class().c.id == cls.get_table_class().c.fk_p2_relation)),
-            'source_model': orm.relation(Model, uselist=False,
-                primaryjoin= (Model.get_table_class().c.plan_identifier == cls.get_table_class().c.fk_source_model)),
-            'target_model': orm.relation(Model, uselist=False,
-                primaryjoin= (Model.get_table_class().c.plan_identifier == cls.get_table_class().c.fk_target_model))
+            'source_model': orm.relation(StrippedModel, uselist=False,
+                primaryjoin= (StrippedModel.get_table_class().c.plan_identifier == cls.get_table_class().c.fk_source_model), enable_typechecks=False),
+            'target_model': orm.relation(StrippedModel, uselist=False,
+                primaryjoin= (StrippedModel.get_table_class().c.plan_identifier == cls.get_table_class().c.fk_target_model), enable_typechecks=False)
             }
         )
       
@@ -113,6 +113,7 @@ class Linkage(SetobjectType):
             # This mapping should really not happen here and now.
             # Instead, the linkage MUST be persisted into
             # table p2_linkage at save time!
+
             THIS_IS_A_DIRTY_HACK_PROPERTIES_DICT[self.attr_name] = orm.relation(
                 mappedsotype,
                 uselist=False,

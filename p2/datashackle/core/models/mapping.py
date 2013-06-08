@@ -14,7 +14,7 @@ from p2.datashackle.core.globals import metadata
 from p2.datashackle.core.models.cardinality import Cardinality
 from p2.datashackle.core.models.linkage import Linkage
 from p2.datashackle.core.models.relation import Relation
-from p2.datashackle.core.models.model import Model
+from p2.datashackle.core.models.model import StrippedModel
 from p2.datashackle.core.models.setobject_types import create_setobject_type
 
 
@@ -65,7 +65,7 @@ def map_field_attr(table_name, field_identifier, column_type):
         # re-map setobject type
         map_tables(exclude_sys_tables=True)
 
-BOOTSTRAP_CLASSES = ('Cardinality', 'Relation', 'Model', 'Linkage')
+BOOTSTRAP_CLASSES = ('Cardinality', 'Relation', 'StrippedModel', 'Linkage')
 
 def needs_mapping(setobject_type, exclude_sys_tables):
     klass = setobject_type.__name__
