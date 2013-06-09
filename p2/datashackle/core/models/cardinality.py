@@ -4,11 +4,11 @@
 
 from sqlalchemy import orm
 
-from p2.datashackle.core import Model, model_config  
+from p2.datashackle.core import ModelBase, model_config
 
 
 @model_config()
-class Cardinality(Model):
+class Cardinality(ModelBase):
 
     @classmethod
     def sa_map(cls):

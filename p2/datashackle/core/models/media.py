@@ -6,10 +6,10 @@ import grok
 
 from p2.datashackle.core import model_config
 from p2.datashackle.core.interfaces import *
-from p2.datashackle.core.models.setobject_types import SetobjectType
+from p2.datashackle.core.models.model import ModelBase
 
 @model_config()
-class Media(SetobjectType):
+class Media(ModelBase):
    
     def generate_url(self, request, as_thumbnail):
         app = grok.getApplication()

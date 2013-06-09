@@ -5,12 +5,33 @@ import venusian
 
 from pyramid.events import subscriber
 from zope.app.appsetup.product import getProductConfiguration
-
-from p2.datashackle.core.models.setobject_types import SetobjectType as Model
 from p2.datashackle.core.sql import select_tables
-
-
 from zope.app.wsgi.interfaces import WSGIPublisherApplicationCreated
+
+class model_config(object):
+
+    def __init__(self, maporder=1):
+        self.maporder = maporder
+
+    def __call__(self, wrapped):
+
+        def callback(context, name, factory):
+            klass = factory.__name__
+            proxy = select_tables(klass)
+            rec = proxy.first()
+            if not rec:
+                raise Exception("No table for class %s." % klass)
+            rec = dict(rec)
+            wrapped.table_name = rec['table']
+            from p2.datashackle.core.app.setobjectreg import setobject_type_registry
+            setobject_type_registry.register_type(factory, self.maporder)
+
+        info = venusian.attach(wrapped, callback, category='datashackle')
+
+        return wrapped
+
+from p2.datashackle.core.models.model import ModelBase
+
 @grok.subscribe(WSGIPublisherApplicationCreated)
 def grok_init(event):
     config = getProductConfiguration('setmanager')
@@ -46,43 +67,6 @@ def Session():
     from zope.component import getUtility
     util = getUtility(IDbUtility)
     return util.Session()
-
-class model_config(object): 
-    
-    def __init__(self, maporder=1):
-        self.maporder = maporder        
-
-    def __call__(self, wrapped):
-
-        def callback(context, name, factory):
-            klass = factory.__name__
-            proxy = select_tables(klass)
-            rec = proxy.first()
-            if not rec:
-                raise Exception("No table for class %s." % klass)
-            rec = dict(rec)
-            wrapped.table_name = rec['table']
-            from p2.datashackle.core.app.setobjectreg import setobject_type_registry
-            setobject_type_registry.register_type(factory, self.maporder)
-
-        info = venusian.attach(wrapped, callback, category='datashackle')
-
-        if info.scope == 'class':
-            pass
-            # if the decorator was attached to a method in a class, or
-            # otherwise executed at class scope, we need to set an
-            # 'attr' into the settings if one isn't already in there
-            #if settings['attr'] is None:
-            #    settings['attr'] = wrapped.__name__
-      
-        return wrapped
-
-#def _model_config(maporder=1):
-#    def decorator(factory):
-#        from p2.datashackle.core.app.setobjectreg import setobject_type_registry
-#        setobject_type_registry.register_type(factory, maporder)
-#        return factory
-#    return decorator
 
 
 

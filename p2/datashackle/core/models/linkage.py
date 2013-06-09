@@ -15,7 +15,7 @@ from p2.datashackle.core.app.setobjectreg import setobject_type_registry, setobj
 from p2.datashackle.core.sql import field_exists
 from p2.datashackle.core.globals import metadata
 from p2.datashackle.core.interfaces import *
-from p2.datashackle.core.models.setobject_types import SetobjectType
+from p2.datashackle.core.models.model import ModelBase
 from p2.datashackle.core.models.relation import Relation
 
 
@@ -36,7 +36,7 @@ class WidgetCollectionClass(OrderedDict, MappedCollection):
 
 
 @model_config()
-class Linkage(SetobjectType):
+class Linkage(ModelBase):
         
     def __init__(self):
         self.cascade = 'save-update, merge'

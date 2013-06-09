@@ -3,7 +3,6 @@
 # Author:  Michael Jenny <michael.jenny%40projekt-und-partner.com>
 
 import grok
-import logging
 
 from sqlalchemy import orm, String, Column, Boolean, ForeignKey, Table
 
@@ -15,11 +14,11 @@ from p2.datashackle.core.models.cardinality import Cardinality
 from p2.datashackle.core.models.linkage import Linkage
 from p2.datashackle.core.models.relation import Relation
 from p2.datashackle.core.models.model import StrippedModel
-from p2.datashackle.core.models.setobject_types import create_setobject_type
+from p2.datashackle.core.models.model import create_setobject_type
 
 
 def orm_mapping(event=None):
-    # Register table type for grokked SetobjectType classes
+    # Register table type for grokked ModelBase classes
     registered = []
     for setobject_type in setobject_type_registry.values():
         class_name = setobject_type.__name__
@@ -44,7 +43,7 @@ def register_remaining_tables(registered):
         table_identifier = str(rec.table)
         class_name = str(rec.klass)
         if not class_name in registered:
-            # There's no sa table type for this table yet. Create one and map to a generic SetobjectType.
+            # There's no sa table type for this table yet. Create one and map to a generic ModelBase.
             registered.append(table_identifier)
             # Create SA table type
             table_type = Table(table_identifier, metadata, autoload=True)

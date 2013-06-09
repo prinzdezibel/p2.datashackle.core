@@ -43,40 +43,40 @@ setobject_table_registry = SetobjectTableRegistry()
 class SetobjectTypeRegistry(object):
 
     def __init__(self):
-        self._setobject_types = dict()
+        self._models = dict()
 
     def register_type(self, setobject_type, maporder):
         print "class: %s:%s" % (setobject_type.__name__, setobject_type.__module__)
-        if setobject_type.__name__ in self._setobject_types:
+        if setobject_type.__name__ in self._models:
             raise Exception("Class name %s already exists. Choose a unique class name." % setobject_type.__name__)
-        self._setobject_types[setobject_type.__name__] = (maporder, setobject_type)
+        self._models[setobject_type.__name__] = (maporder, setobject_type)
     
     def delete_by_table(self, table_name):
-        for (key,sotype) in self._setobject_types.items():
+        for (key,sotype) in self._models.items():
             if sotype[1].get_table_name() == table_name:
-                del(self._setobject_types[key])
+                del(self._models[key])
     
     def lookup_by_table(self, table_name):
-        for (key,sotype) in self._setobject_types.items():
+        for (key,sotype) in self._models.items():
             if sotype[1].get_table_name() == table_name:
-                return self._setobject_types[key][1]
+                return self._models[key][1]
         return None
 
     def get(self, name):
         if name == None:
             return None
-        t = self._setobject_types.get(name)
+        t = self._models.get(name)
         if t == None:
             return None
         else:
             return t[1]
 
     def lookup(self, name):
-        return self._setobject_types[name][1]
+        return self._models[name][1]
     
     def values(self):
         """A generator that yields all registered setobject types."""
-        type_list = [t for t in self._setobject_types.itervalues()]
+        type_list = [t for t in self._models.itervalues()]
         sortd = sorted(type_list, key=lambda entry: entry[0])
         for (_, setobject_type) in sortd:
             yield setobject_type

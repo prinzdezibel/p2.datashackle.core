@@ -10,13 +10,13 @@ from p2.datashackle.core import model_config, Session
 from p2.datashackle.core.app.setobjectreg import setobject_table_registry, \
     setobject_type_registry
 from p2.datashackle.core.app.exceptions import UserException
-from p2.datashackle.core.models import Model
+from p2.datashackle.core.models.model import ModelBase
 from p2.datashackle.core.models.cardinality import Cardinality
 from p2.datashackle.core.sql import field_exists
 
 
 @model_config()
-class Relation(Model):
+class Relation(ModelBase):
     """The relation class represents and manages database relations.
     """    
 
@@ -171,7 +171,7 @@ class Relation(Model):
                 useexisting=True, mysql_engine='InnoDB')
             
             # Register table type
-            setobject_table_registry.register_type('p2.datashackle.core.models.setobject_types', self.relation.xref_table, self.relation.xref_table, mytable)
+            setobject_table_registry.register_type('p2.datashackle.core.models.model', self.relation.xref_table, self.relation.xref_table, mytable)
             
             # Create table
             mytable.create()
