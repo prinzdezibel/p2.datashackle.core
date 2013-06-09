@@ -28,7 +28,6 @@ setup(name='p2.datashackle.core',
           'grok',
           'venusian',
           'lxml',
-          'pyramid'
           ],
       entry_points="""
       # -*- Entry points: -*-

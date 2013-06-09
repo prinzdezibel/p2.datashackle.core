@@ -3,7 +3,6 @@
 import grok
 import venusian
 
-from pyramid.events import subscriber
 from zope.app.appsetup.product import getProductConfiguration
 from p2.datashackle.core.sql import select_tables
 from zope.app.wsgi.interfaces import WSGIPublisherApplicationCreated
