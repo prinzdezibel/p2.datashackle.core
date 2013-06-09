@@ -177,7 +177,7 @@ class Relation(ModelBase):
             mytable.create()
             
             # Create setobject type
-            create_setobject_type(self.relation.xref_table, self.relation.xref_table)
+            create_basemodel_type(self.relation.xref_table, self.relation.xref_table)
         else:
             # Alter table to have the new columns if they aren't there yet
             mytable = Table(self.relation.xref_table, metadata, autoload=True, useexisting=True)

@@ -30,6 +30,7 @@ class model_config(object):
 
         return wrapped
 
+# deferred import to prevent cyclic import statements
 from p2.datashackle.core.models.model import ModelBase
 
 @grok.subscribe(WSGIPublisherApplicationCreated)

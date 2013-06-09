@@ -14,7 +14,7 @@ from p2.datashackle.core.models.cardinality import Cardinality
 from p2.datashackle.core.models.linkage import Linkage
 from p2.datashackle.core.models.relation import Relation
 from p2.datashackle.core.models.model import StrippedModel
-from p2.datashackle.core.models.model import create_setobject_type
+from p2.datashackle.core.models.model import create_basemodel_type
 
 
 def orm_mapping(event=None):
@@ -50,7 +50,7 @@ def register_remaining_tables(registered):
             # Register table type
             setobject_table_registry.register_type(class_name, table_identifier, table_type)
             # Create a new setobject orm type
-            setobject_type = create_setobject_type(class_name, table_identifier, do_mapping=False)
+            setobject_type = create_basemodel_type(class_name, table_identifier, do_mapping=False)
     res.close()
 
 def map_field_attr(table_name, field_identifier, column_type):

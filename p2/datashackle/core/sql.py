@@ -29,7 +29,7 @@ def table_exists(table_name):
 def select_tables(klass=None):
     db_utility = getUtility(IDbUtility)
     if db_utility.settings['datashackle.db_provider'] == 'mysql':
-        stmt = "SELECT klass, `table` FROM p2_plan"
+        stmt = "SELECT klass, `table` FROM p2_model"
         if klass:
             stmt += " WHERE klass = '%s'" % klass
     else:

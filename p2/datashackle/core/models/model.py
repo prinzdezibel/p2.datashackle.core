@@ -4,21 +4,22 @@
 
 import grok
 
-
 from migrate.changeset import *
+from p2.datashackle.core.globals import metadata
+from p2.datashackle.core.app.exceptions import *
+from p2.datashackle.core.app.setobjectreg import setobject_table_registry, setobject_type_registry
+from p2.datashackle.core.interfaces import IDbUtility
+from p2.datashackle.core.models.identity import generate_random_identifier
 from sqlalchemy import orm, String, Boolean, ForeignKey, or_
 from sqlalchemy.sql import select, and_
 from sqlalchemy.orm import mapper, object_mapper, object_session
 from sqlalchemy.orm.exc import UnmappedClassError
 from sqlalchemy.orm.mapper import _mapper_registry
 from sqlalchemy.orm.util import has_identity
+from sqlalchemy import and_
+from sqlalchemy.orm import class_mapper
+from sqlalchemy.orm.properties import RelationshipProperty
 from zope.component import getUtility, Interface
-
-from p2.datashackle.core.globals import metadata
-from p2.datashackle.core.app.exceptions import *
-from p2.datashackle.core.app.setobjectreg import setobject_table_registry, setobject_type_registry
-from p2.datashackle.core.interfaces import IDbUtility
-from p2.datashackle.core.models.identity import generate_random_identifier
 
 
 class classproperty(property):
@@ -26,7 +27,7 @@ class classproperty(property):
         return self.fget.__get__(None, owner)()
 
 
-def create_setobject_type(class_name, table_name, do_mapping=True):
+def create_basemodel_type(class_name, table_name, do_mapping=True):
     """Create a setobject derived ORM type at runtime."""
 
     # The third parameter of builtin function 'type' is a dictionary which becomes the class' __dict__. We define the __init__
@@ -47,12 +48,10 @@ def create_setobject_type(class_name, table_name, do_mapping=True):
 
     return setobject_type
 
-from sqlalchemy import and_
-from sqlalchemy.orm import class_mapper
-from sqlalchemy.orm.properties import RelationshipProperty
 
 class ModelBase(object):
-    """ORM base class for all sqlalchemy mapped tables. Setobjects are instances of derived classes from this class."""
+    """ORM base class for all sqlalchemy mapped tables.
+    """
 
     # Linkage contains all linkages of the setobject's type, but NOT the linkages
     # of base classes,from which setobject might be derived from. If interested in
@@ -239,7 +238,7 @@ from p2.datashackle.core import model_config
 
 @model_config()
 class StrippedModel(ModelBase):
-    """Operates like Plan on p2_plan without the need to import the Plan class type.
+    """Operates like Plan on p2_model without the need to import the Plan class type.
         It has the same instrumented attributes like Plan.
     """
     @classmethod
