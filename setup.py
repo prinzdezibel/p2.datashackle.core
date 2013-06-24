@@ -23,7 +23,6 @@ setup(name='p2.datashackle.core',
       install_requires=[
           'setuptools',
           'SQLAlchemy',
-          'sqlalchemy-migrate',
           'MySQL-python',
           'grok',
           'venusian',
